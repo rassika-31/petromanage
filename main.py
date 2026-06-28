@@ -146,3 +146,24 @@ def delete_user(user_id: str):
         return {"message": "User deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/inventory/{item_id}")
+def delete_inventory(item_id: str):
+    try:
+        supabase.table("inventory").delete().eq("id", item_id).execute()
+        return {"message": "Item deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/inventory/{item_id}")
+def update_inventory(item_id: str, item: InventoryItem):
+    try:
+        result = supabase.table("inventory").update({
+            "product_name": item.product_name,
+            "quantity": item.quantity,
+            "unit": item.unit,
+            "location": item.location
+        }).eq("id", item_id).execute()
+        return {"message": "Item updated", "data": result.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
