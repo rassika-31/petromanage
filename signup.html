@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PetroManage – Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #7eb8d4;
+    }
+
+    /* ── Main area ── */
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 40px 20px;
+    }
+
+    /* ── Back button ── */
+    .back-btn {
+      position: absolute;
+      top: 30px;
+      right: 50px;
+      background-color: #2c3e5d;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 32px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background-color: #1e2d44; }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 38px 44px 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    }
+
+    .card-title {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a2e4a;
+      margin-bottom: 4px;
+    }
+
+    .card-subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: #6b7a8d;
+      margin-bottom: 24px;
+    }
+
+    /* ── Form fields ── */
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a2e4a;
+      margin-bottom: 6px;
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      border: 1.5px solid #cdd6e0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 13px;
+      color: #1a2e4a;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+
+    .input-wrap input::placeholder { color: #b0bcc8; }
+    .input-wrap input:focus { border-color: #7eb8d4; }
+
+    /* password eye icon */
+    .eye-btn {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      color: #8a9bac;
+      transition: color 0.2s;
+    }
+    .eye-btn:hover { color: #1a2e4a; }
+
+    /* ── Role select ── */
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap select {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1.5px solid #cdd6e0;
+      border-radius: 8px;
+      padding: 10px 36px 10px 14px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 13px;
+      color: #b0bcc8;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .select-wrap select.selected {
+      color: #1a2e4a;
+    }
+
+    .select-wrap select:focus { border-color: #7eb8d4; }
+
+    .select-wrap select option { color: #1a2e4a; }
+    .select-wrap select option[value=""] { color: #b0bcc8; }
+
+    .chevron {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #8a9bac;
+    }
+
+    /* ── Register button ── */
+    .register-btn {
+      width: 100%;
+      background: #e87722;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 13px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 22px;
+    }
+    .register-btn:hover { background: #d06518; }
+    .register-btn:active { transform: scale(0.98); }
+
+    /* ── Validation error ── */
+    .error-msg {
+      font-size: 11px;
+      color: #e03030;
+      margin-top: 4px;
+      display: none;
+    }
+
+    /* ── Footer ── */
+    footer {
+      background-color: #1a2e4a;
+      color: #fff;
+      padding: 20px 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-brand .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-icon { width: 22px; height: 22px; }
+    .petro  { color: #e87722; }
+    .manage { color: #fff; }
+
+    .footer-brand .tagline {
+      font-size: 11px;
+      color: #8fa8bf;
+      margin-top: 2px;
+    }
+
+    .footer-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .footer-nav {
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .footer-nav a {
+      color: #fff;
+      text-decoration: none;
+      padding: 0 14px;
+      border-right: 1px solid #3a5068;
+      transition: color 0.2s;
+    }
+    .footer-nav a:first-child { border-left: 1px solid #3a5068; }
+    .footer-nav a:hover { color: #e87722; }
+
+    .footer-center .copyright {
+      font-size: 11px;
+      color: #8fa8bf;
+      margin-top: 6px;
+    }
+
+    .footer-contact {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 12px;
+      color: #c8d8e4;
+    }
+
+    .footer-contact span {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a2e4a;
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      opacity: 0;
+      transition: all 0.35s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main Section -->
+  <div class="main">
+
+    <button class="back-btn" onclick="history.back()">Back</button>
+
+    <div class="card">
+      <div class="card-title">Sign Up</div>
+      <div class="card-subtitle">Register to Start</div>
+
+      <!-- Username/Email -->
+      <div class="field">
+        <label for="username">Username/Email</label>
+        <div class="input-wrap">
+          <input type="text" id="username" placeholder="Enter username or email" autocomplete="username"/>
+        </div>
+        <div class="error-msg" id="username-err">Please enter your username or email.</div>
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <input type="password" id="password" placeholder="Enter password" autocomplete="new-password"/>
+          <button class="eye-btn" type="button" id="eye1" aria-label="Toggle password visibility">
+            <svg id="eye-icon-1" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <div class="error-msg" id="password-err">Please enter a password.</div>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="field">
+        <label for="confirm-password">Confirm Password</label>
+        <div class="input-wrap">
+          <input type="password" id="confirm-password" placeholder="Enter password" autocomplete="new-password"/>
+          <button class="eye-btn" type="button" id="eye2" aria-label="Toggle confirm password visibility">
+            <svg id="eye-icon-2" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <div class="error-msg" id="confirm-err">Passwords do not match.</div>
+      </div>
+
+      <!-- Role -->
+      <div class="field">
+        <label for="role">Role</label>
+        <div class="select-wrap">
+          <select id="role">
+            <option value="" disabled selected>Select Role</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Warehouse Manager</option>
+            <option value="operator">Warehouse Supervisor</option>
+            <option value="viewer">Import Manager</option>
+            <option value="viewer">Export Manager</option>
+            <option value="viewer">Staff</option>
+            <option value="viewer">Auditor</option>
+          </select>
+          <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+        <div class="error-msg" id="role-err">Please select a role.</div>
+      </div>
+
+      <!-- Register button -->
+      <button class="register-btn" id="register-btn">Register</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-brand">
+      <div class="brand-name">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C12 2 7 7.5 7 13a5 5 0 0010 0c0-2.5-1.5-4.5-2-5.5 0 0-.5 2-2 3C12 8 12 2 12 2z" fill="#e87722"/>
+          <path d="M12 10c0 0-.8 1.2-.8 2.5a1.8 1.8 0 003.6 0C14.8 11.2 12 10 12 10z" fill="#fff" opacity="0.5"/>
+        </svg>
+        <span class="petro">Petro</span><span class="manage">Manage</span>
+      </div>
+      <div class="tagline">Smart Petroleum Management Platform</div>
+    </div>
+
+    <div class="footer-center">
+      <nav class="footer-nav">
+        <a href="#">Home</a>
+        <a href="#">Features</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </nav>
+      <div class="copyright">© 2026 All Rights Reserved</div>
+    </div>
+
+    <div class="footer-contact">
+      <span>✉ support@petromanage.com</span>
+      <span>📞 +91 98765 43210</span>
+      <span>📍 Chennai, India</span>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── Eye toggle helper ──
+    const eyeOpenSVG   = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    const eyeClosedSVG = `<line x1="1" y1="1" x2="23" y2="23"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 01-4.24-4.24"/><path d="M1 12s4-8 11-8m0 0c1.27 0 2.49.22 3.63.63"/>`;
+
+    function setupEye(btnId, inputId, iconId) {
+      let visible = false;
+      document.getElementById(btnId).addEventListener('click', () => {
+        visible = !visible;
+        document.getElementById(inputId).type = visible ? 'text' : 'password';
+        document.getElementById(iconId).innerHTML = visible ? eyeClosedSVG : eyeOpenSVG;
+      });
+    }
+
+    setupEye('eye1', 'password', 'eye-icon-1');
+    setupEye('eye2', 'confirm-password', 'eye-icon-2');
+
+    // ── Role select color ──
+    const roleSelect = document.getElementById('role');
+    roleSelect.addEventListener('change', () => {
+      roleSelect.classList.toggle('selected', roleSelect.value !== '');
+    });
+
+    // ── Toast ──
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ── Clear errors on input ──
+    ['username','password','confirm-password'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        document.getElementById(id.replace('confirm-password','confirm') + '-err').style.display = 'none';
+      });
+    });
+    roleSelect.addEventListener('change', () => {
+      document.getElementById('role-err').style.display = 'none';
+    });
+
+    // ── Register validation ──
+    document.getElementById('register-btn').addEventListener('click', () => {
+      const user    = document.getElementById('username').value.trim();
+      const pwd     = document.getElementById('password').value.trim();
+      const confirm = document.getElementById('confirm-password').value.trim();
+      const role    = roleSelect.value;
+
+      let ok = true;
+
+      const show = (id) => { document.getElementById(id).style.display = 'block'; ok = false; };
+      const hide = (id) => { document.getElementById(id).style.display = 'none'; };
+
+      if (!user)            show('username-err');  else hide('username-err');
+      if (!pwd)             show('password-err');  else hide('password-err');
+      if (!confirm || confirm !== pwd) {
+        document.getElementById('confirm-err').textContent =
+          !confirm ? 'Please confirm your password.' : 'Passwords do not match.';
+        show('confirm-err');
+      } else {
+        hide('confirm-err');
+      }
+      if (!role)            show('role-err');      else hide('role-err');
+
+     if (ok) {
+  showToast('Registering…');
+  fetch('http://127.0.0.1:8000/auth/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: user,
+      email: user + '@petromanage.com',
+      password: pwd,
+      role: role
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message) {
+      showToast('Registration successful! Redirecting…');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+    } else {
+      showToast(data.detail || 'Registration failed!');
+    }
+  })
+  .catch(() => showToast('Cannot connect to server!'));
+}
+    });
+
+    // ── Enter key ──
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('register-btn').click();
+    });
+  </script>
+</body>
+</html>

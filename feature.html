@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PetroManage – Features</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:   #0d1b2a;
+      --navy2:  #162032;
+      --orange: #f07120;
+      --orange2:#e55f0a;
+      --green:  #22c55e;
+      --blue:   #3b82f6;
+      --pink:   #ec4899;
+      --white:  #ffffff;
+      --off:    #e8edf3;
+      --muted:  #8da0b5;
+      --font:   'Barlow', sans-serif;
+    }
+    html, body { height: 100%; }
+    body { font-family: var(--font); background: var(--navy); color: var(--white); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 64px;
+      box-shadow: 0 2px 20px rgba(0,0,0,.4);
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-text { font-size: 1.35rem; font-weight: 700; letter-spacing: -.5px; color: var(--white); }
+    .logo-text span { color: var(--orange); }
+    .nav-links { display: flex; gap: 36px; list-style: none; align-items: center; }
+    .nav-links a { color: var(--white); text-decoration: none; font-size: .95rem; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--orange); }
+    .nav-links .active-link {
+      color: var(--white); border: 2px solid var(--orange);
+      border-radius: 6px; padding: 6px 18px; font-weight: 600;
+    }
+    .nav-links .active-link:hover { color: var(--orange); }
+    .btn-login {
+      background: var(--orange); color: var(--white); border: none; border-radius: 6px;
+      padding: 9px 26px; font-family: var(--font); font-size: .95rem; font-weight: 600;
+      cursor: pointer; transition: background .2s, transform .15s;
+    }
+    .btn-login:hover { background: var(--orange2); transform: translateY(-1px); }
+    /* FEATURES PAGE */
+    .features-page {
+      flex: 1; position: relative;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 100px 40px 60px;
+      min-height: calc(100vh - 90px);
+    }
+    .features-page::before {
+      content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+
+  background-image:
+    linear-gradient(to right, rgba(13,27,42,.90) 42%, rgba(13,27,42,.38) 100%),
+    url('images/image.png'); /* your PNG file path */
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+    }
+
+    .features-inner {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 860px;
+      display: flex; flex-direction: column; align-items: center; gap: 40px;
+    }
+
+    /* Cards Row */
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      width: 100%;
+    }
+
+    .feat-card {
+      background: rgba(255,255,255,0.92);
+      border-radius: 10px;
+      padding: 32px 18px 22px;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      cursor: pointer;
+      transition: transform .22s, box-shadow .22s;
+      border: 3px solid transparent;
+      position: relative;
+    }
+    .feat-card:hover { transform: translateY(-6px); }
+
+    /* Individual border colors */
+    .card-1 { border-color: var(--orange); }
+    .card-2 { border-color: var(--green); }
+    .card-3 { border-color: var(--blue); }
+    .card-4 { border-color: var(--pink); }
+
+    .card-1:hover { box-shadow: 0 8px 32px rgba(240,113,32,.35); }
+    .card-2:hover { box-shadow: 0 8px 32px rgba(34,197,94,.35); }
+    .card-3:hover { box-shadow: 0 8px 32px rgba(59,130,246,.35); }
+    .card-4:hover { box-shadow: 0 8px 32px rgba(236,72,153,.35); }
+
+    .card-icon svg { width: 52px; height: 52px; }
+    .card-1 .card-icon svg { color: var(--navy); }
+    .card-2 .card-icon svg { color: var(--navy); }
+    .card-3 .card-icon svg { color: var(--navy); }
+    .card-4 .card-icon svg { color: var(--navy); }
+
+    .card-title {
+      font-size: .95rem; font-weight: 700;
+      color: var(--navy); text-align: center; line-height: 1.3;
+    }
+
+    /* Description Box */
+    .desc-box {
+      width: 100%;
+      min-height: 68px;
+      background: rgba(13,27,42,.78);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 10px;
+      backdrop-filter: blur(8px);
+      padding: 18px 28px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .3s ease;
+    }
+    .desc-box p {
+      font-size: 1rem; color: var(--off); text-align: center;
+      line-height: 1.6; font-weight: 500;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity .3s ease, transform .3s ease;
+    }
+    .desc-box.active p {
+      opacity: 1; transform: translateY(0);
+    }
+    .desc-box .placeholder {
+      font-size: .9rem; color: var(--muted); font-style: italic;
+      transition: opacity .3s ease;
+    }
+    .desc-box.active .placeholder { display: none; }
+
+    /* Animations */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .cards-row  { animation: fadeUp .6s .1s ease both; }
+    .desc-box   { animation: fadeUp .6s .25s ease both; }
+
+    /* FOOTER */
+    footer {
+      background: var(--navy2); padding: 28px 40px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      align-items: center; gap: 20px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .footer-brand p { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+    .footer-links { display: flex; justify-content: center; flex-direction: column; align-items: center; gap: 6px; }
+    .footer-links-row { display: flex; align-items: center; }
+    .footer-links-row a { color: var(--off); text-decoration: none; font-size: .85rem; padding: 0 14px; border-right: 1px solid rgba(255,255,255,.2); transition: color .2s; }
+    .footer-links-row a:last-child { border-right: none; }
+    .footer-links-row a:hover { color: var(--orange); }
+    .footer-copy { font-size: .75rem; color: var(--muted); margin-top: 8px; text-align: center; }
+    .footer-contact { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    .contact-item { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--off); }
+
+    @media (max-width: 700px) {
+      nav { padding: 0 20px; } .nav-links { display: none; }
+      .cards-row { grid-template-columns: repeat(2,1fr); }
+      .features-page { padding: 90px 20px 40px; }
+      footer { grid-template-columns: 1fr; text-align: center; }
+      .footer-contact { align-items: center; }
+    }
+    .sample { text-decoration: none; color:white;}
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo" href="#">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="18" fill="#1c2d42"/>
+        <path d="M18 6C18 6 12 13 12 19a6 6 0 0012 0c0-3-2-5-2-5s-1 3-3 3c-1.5 0-2.5-1.5-2-3.5C17.5 11.5 18 6 18 6z" fill="#f07120"/>
+        <path d="M18 14c0 0-2 3-2 5.5a2 2 0 004 0C20 17 18 14 18 14z" fill="#ffa040"/>
+      </svg>
+      <span class="logo-text">Petro<span>Manage</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="home.html">Home</a></li>
+      <li><a href="feature.html" class="active-link">Features</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <a href="signup.html"><button class="btn-login">SignUp</button></a>
+  </nav>
+
+  <!-- FEATURES SECTION -->
+  <main class="features-page">
+    <div class="features-inner">
+
+      <div class="cards-row">
+
+        <!-- Card 1: Bulk Import (orange) -->
+        <div class="feat-card card-1"
+          data-desc="Upload large volumes of petroleum data using CSV/Excel with automated validation."
+          onmouseenter="showDesc(this)" onmouseleave="clearDesc()">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          <div class="card-title">Bulk Import</div>
+        </div>
+
+        <!-- Card 2: Export Reports (green) -->
+        <div class="feat-card card-2"
+          data-desc="Generate detailed reports for stock, dispatch, and compliance in PDF/Excel formats."
+          onmouseenter="showDesc(this)" onmouseleave="clearDesc()">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="card-title">Export Reports</div>
+        </div>
+
+        <!-- Card 3: Real-Time Dashboard (blue) -->
+        <div class="feat-card card-3"
+          data-desc="Monitor live petroleum inventory, tank levels, and operational KPIs on an interactive real-time dashboard."
+          onmouseenter="showDesc(this)" onmouseleave="clearDesc()">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18"/>
+              <path d="M9 21V9"/>
+              <polyline points="7 15 10 12 13 14 17 10"/>
+            </svg>
+          </div>
+          <div class="card-title">Real-Time Dashboard</div>
+        </div>
+
+        <!-- Card 4: Role-Based Access (pink) -->
+        <div class="feat-card card-4"
+          data-desc="Control user permissions with role-based access — assign admin, manager, or operator rights securely."
+          onmouseenter="showDesc(this)" onmouseleave="clearDesc()">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="11" width="14" height="10" rx="2"/>
+              <path d="M8 11V7a4 4 0 018 0v4"/>
+              <circle cx="12" cy="16" r="1.5"/>
+              <line x1="18" y1="7" x2="21" y2="5"/>
+              <line x1="20" y1="11" x2="23" y2="11"/>
+            </svg>
+          </div>
+          <div class="card-title">Role-Based Access</div>
+        </div>
+
+      </div>
+
+      <!-- Description Box -->
+      <div class="desc-box" id="descBox">
+        <p id="descText"></p>
+        <span class="placeholder">Hover over a feature to learn more</span>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">
+      <a class="logo" href="#" style="margin-bottom:4px;display:inline-flex;">
+        <svg width="28" height="28" viewBox="0 0 36 36" fill="none" style="margin-right:8px">
+          <circle cx="18" cy="18" r="18" fill="#1c2d42"/>
+          <path d="M18 6C18 6 12 13 12 19a6 6 0 0012 0c0-3-2-5-2-5s-1 3-3 3c-1.5 0-2.5-1.5-2-3.5C17.5 11.5 18 6 18 6z" fill="#f07120"/>
+          <path d="M18 14c0 0-2 3-2 5.5a2 2 0 004 0C20 17 18 14 18 14z" fill="#ffa040"/>
+        </svg>
+        <span class="logo-text">Petro<span>Manage</span></span>
+      </a>
+      <p>Smart Petroleum Management Platform</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-links-row">
+        <a href="home.html">Home</a><a href="feature.html">Features</a><a href="about.html">About</a><a href="contact.html">Contact</a>
+      </div>
+      <p class="footer-copy">&#169; 2026 All Rights Reserved</p>
+    </div>
+    <div class="footer-contact">
+      <div class="contact-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/>
+        </svg>support@petromanage.com
+      </div>
+      <div class="contact-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.09 5.18 2 2 0 015.07 3h3a2 2 0 012 1.72c.13 1 .37 1.97.72 2.9a2 2 0 01-.45 2.11L9.09 10.91a16 16 0 006 6l1.18-1.18a2 2 0 012.11-.45c.93.35 1.9.59 2.9.72A2 2 0 0122 16.92z"/>
+        </svg>+91 98765 43210
+      </div>
+      <div class="contact-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
+        </svg>Chennai, India
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll('a[href="#"]').forEach(a => a.addEventListener('click', e => e.preventDefault()));
+
+    const descBox  = document.getElementById('descBox');
+    const descText = document.getElementById('descText');
+
+    function showDesc(card) {
+      const text = card.getAttribute('data-desc');
+      descText.textContent = text;
+      descBox.classList.add('active');
+    }
+    function clearDesc() {
+      descBox.classList.remove('active');
+      descText.textContent = '';
+    }
+  </script>
+</body>
+</html>

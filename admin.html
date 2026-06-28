@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PetroManage – Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --navy: #1a2e4a;
+      --orange: #e87722;
+      --orange-dark: #d06518;
+      --sidebar-w: 160px;
+      --blue-bg: #c8dff0;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: var(--blue-bg); color: var(--navy); min-height: 100vh; display: flex; flex-direction: column; }
+    .app { display: flex; flex: 1; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--navy);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+    }
+    .sidebar-logo { display: flex; align-items: center; gap: 5px; padding: 18px 14px 24px; text-decoration: none; }
+    .sidebar-logo svg { width: 20px; height: 20px; flex-shrink: 0; }
+    .sidebar-logo .petro { color: var(--orange); font-weight: 700; font-size: 14px; }
+    .sidebar-logo .manage { color: #fff; font-weight: 700; font-size: 14px; }
+    .nav-item {
+      width: 100%; padding: 14px 18px; text-align: left; color: #a8c0d6; font-size: 13.5px; font-weight: 500;
+      cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; user-select: none;
+    }
+    .nav-item:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .nav-item.active { background: var(--orange); color: #fff; border-left-color: #fff; }
+
+    /* MAIN */
+    .content { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* HEADER */
+    .header {
+      height: 60px; background: #fff; display: flex; align-items: center; justify-content: flex-end;
+      padding: 0 28px; border-bottom: 1px solid #d0dde8; gap: 14px; position: sticky; top: 0; z-index: 90;
+    }
+    .header-title { font-size: 26px; font-weight: 800; color: var(--navy); margin-right: auto; font-style: italic; }
+    .header-icon {
+      width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--navy); border: 1.5px solid #d0dde8; transition: background 0.2s; position: relative;
+    }
+    .header-icon:hover { background: #eaf4fb; }
+    .notif-dot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: #e03030; border-radius: 50%; border: 1.5px solid #fff; }
+
+    /* NOTIF POPUP */
+    .notif-popup {
+      position: fixed; top: 68px; right: 18px; width: 320px; background: #fff; border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(26,46,74,0.18); z-index: 200; display: none; overflow: hidden; animation: popIn 0.22s ease;
+    }
+    .notif-popup.open { display: block; }
+    @keyframes popIn { from{opacity:0;transform:translateY(-8px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+    .notif-hdr { padding: 13px 17px 9px; font-weight: 700; font-size: 13px; color: var(--navy); border-bottom: 1px solid #e8f0f7; display: flex; justify-content: space-between; align-items: center; }
+    .notif-hdr span { font-size: 11px; color: var(--orange); cursor: pointer; font-weight: 500; }
+    .notif-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #f0f5fa; transition: background 0.15s; cursor: pointer; }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: #f5fbff; }
+    .ni { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
+    .ni-red{background:#fff0f0} .ni-amber{background:#fff8ed} .ni-green{background:#f0fff4} .ni-blue{background:#eaf4fb}
+    .notif-text strong { font-size: 12px; color: var(--navy); display: block; }
+    .notif-text small  { font-size: 10.5px; color: #8a9bac; }
+
+    /* PAGES */
+    .page { display: none; padding: 22px 26px; flex: 1; }
+    .page.active { display: block; }
+
+    /* WIDGETS */
+    .widget { background: #fff; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(26,46,74,0.07); }
+    .widget-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 13px; }
+
+    /* GRIDS */
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 18px; }
+
+    /* CHART BOXES */
+    .chart-box { height: 170px; }
+    .chart-box-sm { height: 140px; }
+    .chart-box-md { height: 195px; }
+
+    /* BADGES */
+    .badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .b-success  { background:#e6f9f0; color:#1a8f55; }
+    .b-pending  { background:#fff3e0; color:var(--orange); }
+    .b-failed   { background:#ffeaea; color:#e03030; }
+    .b-active   { background:#e6f9f0; color:#1a8f55; font-size:10px; }
+    .b-inactive { background:#ffeaea; color:#e03030; font-size:10px; }
+
+    /* DONUT */
+    .pie-row { display: flex; align-items: center; gap: 18px; }
+    .donut-wrap { position: relative; flex-shrink: 0; }
+    .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 10px; font-weight: 700; color: var(--navy); text-align: center; pointer-events: none; line-height: 1.3; }
+    .legend { display: flex; flex-direction: column; gap: 6px; }
+    .legend-item { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: #4a5568; }
+    .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── DASHBOARD ── */
+    .dash-top { display: grid; grid-template-columns: 1fr 1fr 1fr 1.6fr; gap: 14px; margin-bottom: 18px; }
+    .dash-mid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+    .stat-card { background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 10px rgba(26,46,74,0.07); }
+    .sc-row { display: flex; align-items: flex-start; justify-content: space-between; }
+    .sc-label { font-size: 10.5px; color: #6b7a8d; font-weight: 500; margin-bottom: 4px; }
+    .sc-value { font-size: 22px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+    .sc-value.blue   { color: #1a6fbf; }
+    .sc-value.green  { color: #1a8f55; }
+    .sc-value.orange { color: var(--orange); }
+    .sc-sub { font-size: 10px; color: var(--orange); margin-top: 2px; font-weight: 500; }
+    .sc-sub.green { color: #1a8f55; }
+    .sc-sub.red   { color: #e03030; }
+    .sc-icon { font-size: 24px; }
+
+    .alerts-widget { background: #fff; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(26,46,74,0.07); }
+    .alerts-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .alerts-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+    .view-all-link { color: var(--orange); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+    .view-all-link:hover { text-decoration: underline; }
+    .alert-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f5fa; }
+    .alert-row:last-child { border-bottom: none; }
+    .alert-icon { font-size: 20px; flex-shrink: 0; }
+    .alert-msg { flex: 1; font-size: 13px; font-weight: 500; color: var(--navy); }
+    .alert-time { font-size: 11.5px; color: #6b7a8d; white-space: nowrap; }
+
+    .dash-bottom { display: grid; grid-template-columns: 1fr 0.55fr; gap: 18px; margin-bottom: 18px; }
+    .activity-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .activity-table th { background: #f0f5fa; color: #6b7a8d; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 12px; }
+    .activity-table td { padding: 11px 12px; border-bottom: 1px solid #f0f5fa; }
+    .activity-table tr:hover td { background: #f8fcff; }
+
+    .quick-actions { background: var(--navy); border-radius: 14px; padding: 18px 20px; }
+    .qa-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+    .qa-btn {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      background: rgba(255,255,255,0.10); color: var(--navy); border: none; border-radius: 10px;
+      padding: 11px 14px; font-family: 'Poppins',sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; margin-bottom: 10px; transition: all 0.2s;
+      background: #fff;
+    }
+    .qa-btn:last-child { margin-bottom: 0; }
+    .qa-btn:hover { background: #f0f8ff; }
+    .qa-btn .qa-ico { font-size: 18px; }
+    .qa-btn .qa-text { font-size: 13px; font-weight: 600; }
+    .qa-btn.qa-blue .qa-text  { color: #2563eb; }
+    .qa-btn.qa-green .qa-text { color: #1a8f55; }
+    .qa-btn.qa-pink .qa-text  { color: #e03070; }
+    .qa-btn.qa-gray .qa-text  { color: var(--navy); }
+
+    .stock-alerts-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; margin-bottom: 18px; }
+
+    /* ── USER MANAGEMENT ── */
+    .um-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 18px; }
+    .um-stat { background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 10px rgba(26,46,74,0.07); display: flex; align-items: center; gap: 14px; position: relative; }
+    .um-stat-icon { font-size: 28px; }
+    .um-stat-val { font-size: 22px; font-weight: 800; color: var(--navy); }
+    .um-stat-lbl { font-size: 11px; color: #6b7a8d; }
+    .add-user-btn {
+      position: absolute; top: 10px; right: 14px;
+      background: var(--orange); color: #fff; border: none; border-radius: 8px;
+      padding: 6px 14px; font-family: 'Poppins',sans-serif; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .add-user-btn:hover { background: var(--orange-dark); }
+    .users-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .users-table th { background: var(--navy); color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 12.5px; }
+    .users-table th:first-child { border-radius: 8px 0 0 0; }
+    .users-table th:last-child  { border-radius: 0 8px 0 0; }
+    .users-table td { padding: 11px 14px; border-bottom: 1px solid #eef4fa; }
+    .users-table tr:hover td { background: #f5fbff; }
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 16px; margin-right: 6px; transition: color 0.2s; }
+    .action-btn:hover { color: var(--orange); }
+
+    /* ── IMPORT MANAGEMENT ── */
+    .drop-zone {
+      border: 2.5px dashed #7eb8d4; border-radius: 14px; background: #f0f8ff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 28px 20px; text-align: center; gap: 8px; cursor: pointer; transition: background 0.2s;
+    }
+    .drop-zone:hover { background: #e4f3fb; }
+    .drop-icon { font-size: 36px; color: #7eb8d4; }
+    .drop-text { font-size: 14px; font-weight: 600; color: var(--navy); }
+    .browse-btn {
+      background: var(--orange); color: #fff; border: none; border-radius: 8px;
+      padding: 8px 20px; font-family: 'Poppins',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .browse-btn:hover { background: var(--orange-dark); }
+    .drop-hint { font-size: 11px; color: #8a9bac; }
+    .is-summary { display: flex; flex-direction: column; gap: 9px; }
+    .is-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 13px; border-radius: 8px; font-size: 12.5px; }
+    .is-row.total   { background: #f0f5fa; color: var(--navy); }
+    .is-row.success { background: #e6f9f0; color: #1a8f55; font-weight: 600; }
+    .is-row.failed  { background: #ffeaea; color: #e03030; font-weight: 600; }
+    .is-row.pending { background: #fff3e0; color: var(--orange); font-weight: 600; }
+    .import-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .import-table th { background: #f0f5fa; color: #6b7a8d; padding: 8px 11px; text-align: left; font-weight: 600; font-size: 12px; }
+    .import-table td { padding: 10px 11px; border-bottom: 1px solid #f0f5fa; }
+    .import-table tr:hover td { background: #f8fcff; }
+
+    /* ── EXPORT MANAGEMENT ── */
+    .filter-bar { background: #fff; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(26,46,74,0.07); margin-bottom: 16px; }
+    .filter-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+    .filter-field { display: flex; flex-direction: column; gap: 4px; }
+    .filter-field label { font-size: 11px; color: #6b7a8d; font-weight: 500; }
+    .filter-field input, .filter-field select {
+      border: 1.5px solid #cdd6e0; border-radius: 8px; padding: 7px 10px;
+      font-family: 'Poppins',sans-serif; font-size: 12px; color: var(--navy); outline: none; background: #fff;
+    }
+    .gen-btn { background: var(--orange); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Poppins',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .gen-btn:hover { background: var(--orange-dark); }
+    .exp-stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 16px; }
+    .exp-stat { background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 10px rgba(26,46,74,0.07); display: flex; align-items: center; gap: 12px; }
+    .exp-stat-icon { font-size: 28px; }
+    .exp-stat-label { font-size: 11px; color: #6b7a8d; }
+    .exp-stat-val { font-size: 18px; font-weight: 700; color: var(--navy); }
+    .exp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .exp-table th { background: #f0f5fa; color: #6b7a8d; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 12px; }
+    .exp-table td { padding: 11px 12px; border-bottom: 1px solid #f0f5fa; }
+    .exp-table tr:hover td { background: #f8fcff; }
+    .icon-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--navy); transition: color 0.2s; }
+    .icon-btn:hover { color: var(--orange); }
+
+    /* ── REPORTS ── */
+    .rpt-filter-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+    .kpi-grid5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 14px; }
+    .kpi-card { background: #fff; border-radius: 12px; padding: 12px 14px; box-shadow: 0 2px 8px rgba(26,46,74,0.07); display: flex; align-items: center; gap: 10px; }
+    .kpi-icon { font-size: 22px; flex-shrink: 0; }
+    .kpi-val { font-size: 14px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+    .kpi-lbl { font-size: 10px; color: #6b7a8d; margin-top: 1px; }
+    .kpi-trend { font-size: 9.5px; margin-top: 2px; }
+    .t-up { color: #1a8f55; } .t-down { color: #e03030; }
+    .rpt-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    .rpt-table th { background: #f0f5fa; color: #6b7a8d; padding: 7px 11px; text-align: left; font-weight: 600; }
+    .rpt-table td { padding: 8px 11px; border-bottom: 1px solid #f0f5fa; }
+    .rpt-table tr:hover td { background: #f8fcff; }
+    .rpt-cat-item { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; font-size: 11.5px; }
+    .rpt-cat-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .rpt-cat-label { flex: 1; color: #4a5568; }
+    .rpt-cat-count { font-weight: 600; color: var(--navy); font-size: 11px; }
+
+    /* FOOTER */
+    footer { background: var(--navy); color: #fff; padding: 16px 26px 16px calc(var(--sidebar-w) + 26px); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-brand .brand-name { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+    .footer-brand .tagline { font-size: 10px; color: #8fa8bf; margin-top: 2px; }
+    .footer-nav { display: flex; align-items: center; font-size: 12px; }
+    .footer-nav a { color: #fff; text-decoration: none; padding: 0 12px; border-right: 1px solid #3a5068; transition: color 0.2s; }
+    .footer-nav a:first-child { border-left: 1px solid #3a5068; }
+    .footer-nav a:hover { color: var(--orange); }
+    .footer-copy { font-size: 10px; color: #8fa8bf; margin-top: 4px; text-align: center; }
+    .footer-contact { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #c8d8e4; }
+    .footer-contact span { display: flex; align-items: center; gap: 6px; }
+    .petro { color: var(--orange); } .manage { color: #fff; }
+
+    .overlay { position: fixed; inset: 0; z-index: 150; display: none; }
+    .overlay.open { display: block; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--navy); color: #fff; padding: 10px 22px; border-radius: 8px; font-size: 13px; opacity: 0; transition: all 0.3s ease; z-index: 500; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .sec-title { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+    .sec-sub { font-size: 11.5px; color: #6b7a8d; margin-bottom: 14px; }
+    .view-link { color: var(--orange); font-size: 12px; font-weight: 500; cursor: pointer; }
+    .view-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <a class="sidebar-logo" href="#">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 7 7.5 7 13a5 5 0 0010 0c0-2.5-1.5-4.5-2-5.5 0 0-.5 2-2 3C12 8 12 2 12 2z" fill="#e87722"/></svg>
+      <span class="petro">Petro</span><span class="manage">Manage</span>
+    </a>
+    <div class="nav-item active" data-page="dashboard">Dashboard</div>
+    <div class="nav-item" data-page="usermgmt">User Management</div>
+    <div class="nav-item" data-page="importmgmt">Import Management</div>
+    <div class="nav-item" data-page="exportmgmt">Export Management</div>
+    <div class="nav-item" data-page="reports">Reports</div>
+    <div class="nav-item" id="logout-btn">Logout</div>
+  </nav>
+
+  <div class="content">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-title">Admin</div>
+      <div class="header-icon" id="notif-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-dot" id="notif-dot"></span>
+      </div>
+    </div>
+
+    <!-- ════════ DASHBOARD ════════ -->
+    <div class="page active" id="page-dashboard">
+
+      <!-- Top stat cards + Recent Alerts -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1.55fr;gap:14px;margin-bottom:14px;">
+        <div class="stat-card">
+          <div class="sc-row"><div><div class="sc-label">Total Users</div><div class="sc-value" id="total-users">125</div><div class="sc-sub green">Active Users</div></div><div class="sc-icon">👥</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-row"><div><div class="sc-label">Total Fuel Stock</div><div class="sc-value blue" id="total-stock">25,450KL</div><div class="sc-sub green">Active All Tanks</div></div><div class="sc-icon">📋</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-row"><div><div class="sc-label">Pending Approvals</div><div class="sc-value">18</div><div class="sc-sub orange">Request Pending</div></div><div class="sc-icon">🕐</div></div>
+        </div>
+        <div class="alerts-widget" style="grid-row:1/3;">
+          <div class="alerts-title-row"><span class="alerts-title">Recent Alerts</span><a class="view-all-link" onclick="navigate('reports')">View All</a></div>
+          <div class="alert-row"><span class="alert-icon">🔴</span><span class="alert-msg">Tank T-03 Low Fuel Level</span><span class="alert-time">10:30 Am</span></div>
+          <div class="alert-row"><span class="alert-icon">🔴</span><span class="alert-msg">Dispatch Delay – DSP-2036</span><span class="alert-time">09:15 Am</span></div>
+          <div class="alert-row"><span class="alert-icon">🔴</span><span class="alert-msg">Import Validation Failed</span><span class="alert-time">08:45 Am</span></div>
+          <div class="alert-row"><span class="alert-icon">🔴</span><span class="alert-msg">Unauthorized Access Attempt</span><span class="alert-time">07:20 Am</span></div>
+        </div>
+      </div>
+
+      <!-- Second stat row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1.55fr;gap:14px;margin-bottom:18px;">
+        <div class="stat-card">
+          <div class="sc-row"><div><div class="sc-label">Daily Transactions</div><div class="sc-value">342</div><div class="sc-sub green">Records</div></div><div class="sc-icon">🔄</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-row"><div><div class="sc-label">Revenue Overview</div><div class="sc-value" style="font-size:17px;">₹ 5,48,90,000</div><div class="sc-sub green">Total Revenue</div></div><div class="sc-icon">📊</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-row"><div><div class="sc-label">System Alerts</div><div class="sc-value orange">7</div><div class="sc-sub red">Critical Alerts</div></div><div class="sc-icon">⚠️</div></div>
+        </div>
+        <!-- empty cell to align with the alerts widget spanning 2 rows -->
+        <div></div>
+      </div>
+
+      <!-- Stock Overview + Fuel Donut -->
+      <div class="stock-alerts-grid">
+        <div class="widget">
+          <div class="widget-title">Stock Overview</div>
+          <div class="chart-box"><canvas id="dashStockChart"></canvas></div>
+        </div>
+        <div class="widget">
+          <div class="widget-title">Fuel Type Distribution</div>
+          <div class="pie-row" style="margin-top:6px;justify-content:center;">
+            <div class="donut-wrap" style="width:140px;height:140px;">
+              <canvas id="dashFuelDonut" width="140" height="140"></canvas>
+              <div class="donut-center">25,450KL</div>
+            </div>
+            <div class="legend">
+              <div class="legend-item"><div class="leg-dot" style="background:#2563eb"></div>Diesel &nbsp; 45%</div>
+              <div class="legend-item"><div class="leg-dot" style="background:#f87c8d"></div>Petrol &nbsp; 30%</div>
+              <div class="legend-item"><div class="leg-dot" style="background:#a78bfa"></div>Jet fuel &nbsp; 15%</div>
+              <div class="legend-item"><div class="leg-dot" style="background:#34d399"></div>Others &nbsp; 10%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activities + Quick Actions -->
+      <div class="dash-bottom">
+        <div class="widget">
+          <div class="widget-title">Recent Activities</div>
+          <table class="activity-table">
+            <thead><tr><th>Activity</th><th>Module</th><th>Performed By</th><th>Date and Time</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>New User Added</td><td>User Management</td><td>Admin</td><td>07/05/2006 10:20 AM</td><td><span class="badge b-success">Successful</span></td></tr>
+              <tr><td>Import File Approved</td><td>Import Management</td><td>Admin</td><td>07/05/2006 10:20 AM</td><td><span class="badge b-success">Successful</span></td></tr>
+              <tr><td>Export Report</td><td>Export Management</td><td>Admin</td><td>07/05/2006 10:20 AM</td><td><span class="badge b-success">Successful</span></td></tr>
+              <tr><td>Dispatch Confirmed</td><td>Dispatch Logs</td><td>Admin</td><td>07/05/2006 10:20 AM</td><td><span class="badge b-success">Successful</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="quick-actions">
+          <div class="qa-title">Quick Actions</div>
+          <button class="qa-btn qa-blue" onclick="navigate('usermgmt')"><span class="qa-ico">👤</span><span class="qa-text">Add New User</span></button>
+          <button class="qa-btn qa-green" onclick="showToast('Approval workflow opened')"><span class="qa-ico">✅</span><span class="qa-text">Approve Request</span></button>
+          <button class="qa-btn qa-pink" onclick="navigate('reports')"><span class="qa-ico">🔴</span><span class="qa-text">Generate Report</span></button>
+          <button class="qa-btn qa-gray" onclick="showToast('System settings opened')"><span class="qa-ico">⚙️</span><span class="qa-text">System Settings</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ USER MANAGEMENT ════════ -->
+    <div class="page" id="page-usermgmt">
+      <div class="um-stats" style="position:relative;">
+        <div class="um-stat"><div class="um-stat-icon">👥</div><div><div class="um-stat-val" id="um-total-users">125</div><div class="um-stat-lbl">Total Users</div></div></div>
+        <div class="um-stat"><div class="um-stat-icon">🏷️</div><div><div class="um-stat-val">7</div><div class="um-stat-lbl">Roles</div></div>
+          <button class="add-user-btn" onclick="document.getElementById('add-user-modal').style.display='flex'">+ Add User</button>
+        </div>
+        <div class="um-stat"><div class="um-stat-icon">✅</div><div><div class="um-stat-val" id="um-active-users">110</div><div class="um-stat-lbl">Active Users</div></div></div>
+        <div class="um-stat"><div class="um-stat-icon">❌</div><div><div class="um-stat-val" id="um-inactive-users">15</div><div class="um-stat-lbl">Inactive Users</div></div></div>
+      </div>
+      <!-- Add User Modal -->
+<div id="add-user-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:32px;border-radius:16px;width:400px;">
+    <h3 style="margin-bottom:20px;color:#1a2e4a;">Add New User</h3>
+    <input id="new-username" placeholder="Username" style="width:100%;padding:10px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px;"><br>
+    <input id="new-email" placeholder="Email" style="width:100%;padding:10px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px;"><br>
+    <input id="new-password" type="password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px;"><br>
+    <select id="new-role" style="width:100%;padding:10px;margin-bottom:20px;border:1px solid #ddd;border-radius:8px;">
+      <option value="">Select Role</option>
+      <option value="admin">Admin</option>
+      <option value="manager">Warehouse Manager</option>
+      <option value="operator">Warehouse Supervisor</option>
+      <option value="import">Import Manager</option>
+      <option value="export">Export Manager</option>
+      <option value="staff">Staff</option>
+      <option value="auditor">Auditor</option>
+    </select><br>
+    <div style="display:flex;gap:10px;">
+      <button onclick="addNewUser()" style="flex:1;padding:12px;background:#e8673a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:15px;">Add User</button>
+      <button onclick="document.getElementById('add-user-modal').style.display='none'" style="flex:1;padding:12px;background:#ccc;border:none;border-radius:8px;cursor:pointer;font-size:15px;">Cancel</button>
+    </div>
+  </div>
+</div>
+      <div class="widget">
+        <table class="users-table">
+          <thead><tr><th>User Id</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last Login</th><th>Action</th></tr></thead>
+          <tbody id="users-tbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════════ IMPORT MANAGEMENT ════════ -->
+    <div class="page" id="page-importmgmt">
+      <div class="sec-title">Import Data</div>
+      <div class="sec-sub">Upload fuel data files [CSV/EXCEL]</div>
+      <div class="grid2" style="margin-bottom:18px;">
+        <div class="drop-zone" onclick="showToast('File browser opened!')">
+          <div class="drop-icon">☁️</div>
+          <div class="drop-text">Drag and Drop Files Here</div>
+          <div style="font-size:12px;color:#6b7a8d;">Or</div>
+          <button class="browse-btn">Browse Files</button>
+          <div class="drop-hint">CSV, XLSX Files only (max 50 MB)</div>
+        </div>
+        <div class="widget">
+          <div class="widget-title">Import Summary</div>
+          <div class="is-summary">
+            <div class="is-row total"><span>Total Records</span><strong>1,250</strong></div>
+            <div class="is-row success"><span>Successful</span><strong>1,100</strong></div>
+            <div class="is-row failed"><span>Failed</span><strong>150</strong></div>
+            <div class="is-row pending"><span>Pending</span><strong>0</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="widget">
+        <div class="widget-title">Import Files</div>
+        <table class="import-table">
+          <thead><tr><th>File Name</th><th>Records</th><th>Successful</th><th>Failed</th><th>Status</th><th>Updated On</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>Fuel_stock_10.xlsx</td><td>500</td><td>490</td><td>10</td><td><span class="badge b-success">Completed</span></td><td>20/04/2026 11:30 AM</td><td><button class="icon-btn">👁</button></td></tr>
+            <tr><td>Qty_15_report.csv</td><td>960</td><td>200</td><td>0</td><td><span class="badge b-success">Completed</span></td><td>18/04/2026 10:30 AM</td><td><button class="icon-btn">👁</button></td></tr>
+            <tr><td>Shipment_data.xlsx</td><td>850</td><td>316</td><td>100</td><td><span class="badge b-success">Completed</span></td><td>10/04/2026 05:42 AM</td><td><button class="icon-btn">👁</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════════ EXPORT MANAGEMENT ════════ -->
+    <div class="page" id="page-exportmgmt">
+      <div class="sec-title">Export Reports</div>
+      <div class="sec-sub">Generate and manage export reports</div>
+      <div class="filter-bar">
+        <div class="filter-row">
+          <div class="filter-field"><label>From Date</label><input type="date" value="2024-01-04"/></div>
+          <div class="filter-field"><label>To Date</label><input type="date" value="2026-04-30"/></div>
+          <div class="filter-field"><label>Select Tank</label><select><option>All Tanks</option><option>T-01</option><option>T-02</option><option>T-03</option></select></div>
+          <div class="filter-field"><label>Select Format</label><select><option>PDF</option><option>EXCEL</option><option>CSV</option></select></div>
+          <button class="gen-btn" onclick="showToast('Export generated!')">Generate Export</button>
+        </div>
+      </div>
+      <div class="exp-stat-grid">
+        <div class="exp-stat"><div class="exp-stat-icon">📤</div><div><div class="exp-stat-label">Total Exports Today</div><div class="exp-stat-val">6</div></div></div>
+        <div class="exp-stat"><div class="exp-stat-icon">🛢️</div><div><div class="exp-stat-label">Total Volume Exported</div><div class="exp-stat-val">8,500 KL</div></div></div>
+        <div class="exp-stat"><div class="exp-stat-icon">📋</div><div><div class="exp-stat-label">Pending Reports</div><div class="exp-stat-val">2</div></div></div>
+      </div>
+      <div class="widget">
+        <div class="widget-title">Export Reports List</div>
+        <table class="exp-table">
+          <thead><tr><th>Export ID</th><th>Date</th><th>Tank</th><th>Format</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>EXP-2026-001</td><td>10/04/2026</td><td>T-03</td><td>PDF</td><td><span class="badge b-pending">Pending</span></td><td><button class="icon-btn" onclick="showToast('Downloading...')">⬇</button></td></tr>
+            <tr><td>EXP-2026-002</td><td>09/04/2026</td><td>T-04</td><td>EXCEL</td><td><span class="badge b-success">Completed</span></td><td><button class="icon-btn" onclick="showToast('Downloading...')">⬇</button></td></tr>
+            <tr><td>EXP-2026-003</td><td>15/03/2026</td><td>T-06</td><td>PDF</td><td><span class="badge b-success">Completed</span></td><td><button class="icon-btn" onclick="showToast('Downloading...')">⬇</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════════ REPORTS ════════ -->
+    <div class="page" id="page-reports">
+      <div class="widget" style="margin-bottom:14px;">
+        <div class="widget-title" style="margin-bottom:10px;">Reports &amp; Analytics</div>
+        <div class="rpt-filter-row">
+          <div class="filter-field"><label>Date Range</label><input type="text" value="01/04/2026 - 30/04/2026"/></div>
+          <div class="filter-field"><label>Report Type</label><select><option>All Reports</option><option>Stock</option><option>Import</option><option>Export</option></select></div>
+          <div class="filter-field"><label>Tank</label><select><option>All Tanks</option><option>T-01</option><option>T-02</option></select></div>
+          <div class="filter-field"><label>Fuel Type</label><select><option>All Fuel Types</option><option>Diesel</option><option>Petrol</option></select></div>
+          <button class="gen-btn" onclick="showToast('Report generated!')">Generate</button>
+        </div>
+      </div>
+      <div class="kpi-grid5">
+        <div class="kpi-card"><div class="kpi-icon">🛢️</div><div><div class="kpi-val">25,450 KL</div><div class="kpi-lbl">Total Stock (KL)</div><div class="kpi-trend t-up">↑ 19.9% from last month</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon">📥</div><div><div class="kpi-val">15,200 KL</div><div class="kpi-lbl">Total Import (KL)</div><div class="kpi-trend t-up">↑ 10.4% from last week</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon">📤</div><div><div class="kpi-val">12,800 KL</div><div class="kpi-lbl">Total Export (KL)</div><div class="kpi-trend t-down">↓ 9.3% from last month</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon">🚛</div><div><div class="kpi-val" id="total-transactions">342</div><div class="kpi-lbl">Total Dispatches</div><div class="kpi-trend t-down">↓ 16.7% from last month</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon">💰</div><div><div class="kpi-val">₹5,48,90,000</div><div class="kpi-lbl">Revenue</div><div class="kpi-trend t-up">↑ 14.6% from last month</div></div></div>
+      </div>
+      <div class="grid3">
+        <div class="widget"><div class="widget-title" style="font-size:12.5px;">Stock Overview</div><div class="chart-box-sm"><canvas id="rptStockLine"></canvas></div></div>
+        <div class="widget"><div class="widget-title" style="font-size:12.5px;">Import Vs Export</div>
+          <div class="pie-row" style="justify-content:center;padding-top:8px;gap:14px;">
+            <div class="donut-wrap" style="width:100px;height:100px;"><canvas id="rptIEDonut" width="100" height="100"></canvas><div class="donut-center" style="font-size:8px;">I vs E</div></div>
+            <div class="legend"><div class="legend-item" style="font-size:11px;"><div class="leg-dot" style="background:#2563eb"></div>Import</div><div class="legend-item" style="font-size:11px;"><div class="leg-dot" style="background:#f97316"></div>Export</div></div>
+          </div>
+        </div>
+        <div class="widget"><div class="widget-title" style="font-size:12.5px;">Import Vs Export (KL)</div><div class="chart-box-sm"><canvas id="rptIEBar"></canvas></div></div>
+      </div>
+      <div class="grid2" style="margin-bottom:14px;">
+        <div class="widget">
+          <div class="widget-title" style="font-size:12.5px;">Fuel Type Distribution</div>
+          <div class="pie-row" style="margin-top:6px;">
+            <div class="donut-wrap" style="width:120px;height:120px;"><canvas id="rptFuelDonut" width="120" height="120"></canvas><div class="donut-center">25,450KL</div></div>
+            <div class="legend">
+              <div class="legend-item"><div class="leg-dot" style="background:#2563eb"></div>Diesel &nbsp; 45%</div>
+              <div class="legend-item"><div class="leg-dot" style="background:#f5c842"></div>Petrol &nbsp; 30%</div>
+              <div class="legend-item"><div class="leg-dot" style="background:#f87c8d"></div>Jet fuel &nbsp; 15%</div>
+              <div class="legend-item"><div class="leg-dot" style="background:#34d399"></div>Others &nbsp; 10%</div>
+            </div>
+          </div>
+        </div>
+        <div class="widget"><div class="widget-title" style="font-size:12.5px;">Top 5 Tanks by Utilisation (%)</div><div class="chart-box-md"><canvas id="rptTopTanks"></canvas></div></div>
+      </div>
+      <div class="grid2" style="margin-bottom:14px;">
+        <div class="widget"><div class="widget-title" style="font-size:12.5px;">Monthly Stock Overview (KL)</div><div class="chart-box-md"><canvas id="rptMonthStock"></canvas></div></div>
+        <div class="widget"><div class="widget-title" style="font-size:12.5px;">Daily Import &amp; Export (KL)</div><div class="chart-box-md"><canvas id="rptDailyIE"></canvas></div></div>
+      </div>
+      <div class="grid2">
+        <div class="widget">
+          <div class="widget-title" style="font-size:12.5px;">Reports List</div>
+          <table class="rpt-table">
+            <thead><tr><th>Report Name</th><th>Report Type</th><th>Generated On</th><th>Format</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>Stock Summary Report</td><td>Stock Report</td><td>30/04/2026</td><td>PDF</td><td><button class="icon-btn" onclick="showToast('Downloading...')">⬇</button></td></tr>
+              <tr><td>Import Summary Report</td><td>Import Report</td><td>28/04/2026</td><td>EXCEL</td><td><button class="icon-btn" onclick="showToast('Downloading...')">⬇</button></td></tr>
+              <tr><td>Export Summary Report</td><td>Export Report</td><td>26/04/2026</td><td>PDF</td><td><button class="icon-btn" onclick="showToast('Downloading...')">⬇</button></td></tr>
+              <tr><td>Dispatch Summary Report</td><td>Dispatch Report</td><td>24/04/2026</td><td>PDF</td><td><button class="icon-btn" onclick="showToast('Downloading...')">⬇</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="widget">
+          <div class="widget-title" style="font-size:12.5px;">Report Categories</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+            <div class="donut-wrap" style="width:100px;height:100px;"><canvas id="rptCatDonut" width="100" height="100"></canvas><div class="donut-center" style="font-size:9px;">40<br>Total Reports</div></div>
+          </div>
+          <div class="rpt-cat-item"><div class="rpt-cat-dot" style="background:#2563eb"></div><div class="rpt-cat-label">Stock Reports &nbsp; 35%</div><div class="rpt-cat-count">14 Reports</div></div>
+          <div class="rpt-cat-item"><div class="rpt-cat-dot" style="background:#16a34a"></div><div class="rpt-cat-label">Import Reports &nbsp; 20%</div><div class="rpt-cat-count">8 Reports</div></div>
+          <div class="rpt-cat-item"><div class="rpt-cat-dot" style="background:#f97316"></div><div class="rpt-cat-label">Export Reports &nbsp; 20%</div><div class="rpt-cat-count">8 Reports</div></div>
+          <div class="rpt-cat-item"><div class="rpt-cat-dot" style="background:#a78bfa"></div><div class="rpt-cat-label">Dispatch Reports &nbsp; 15%</div><div class="rpt-cat-count">6 Reports</div></div>
+          <div class="rpt-cat-item"><div class="rpt-cat-dot" style="background:#f5c842"></div><div class="rpt-cat-label">Revenue Reports &nbsp; 10%</div><div class="rpt-cat-count">4 Reports</div></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-brand">
+        <div class="brand-name"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 7 7.5 7 13a5 5 0 0010 0c0-2.5-1.5-4.5-2-5.5 0 0-.5 2-2 3C12 8 12 2 12 2z" fill="#e87722"/></svg><span class="petro">Petro</span><span class="manage">Manage</span></div>
+        <div class="tagline">Smart Petroleum Management Platform</div>
+      </div>
+      <div>
+        <nav class="footer-nav"><a href="home.html">Home</a><a href="feature.html">Features</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav>
+        <div class="footer-copy">© 2026 All Rights Reserved</div>
+      </div>
+      <div class="footer-contact">
+        <span>✉ support@petromanage.com</span>
+        <span>📞 +91 98765 43210</span>
+        <span>📍 Chennai, India</span>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- Notification Popup -->
+<div class="overlay" id="overlay" onclick="closeNotif()"></div>
+<div class="notif-popup" id="notif-popup">
+  <div class="notif-hdr">Notifications <span onclick="markAllRead()">Mark all read</span></div>
+  <div class="notif-item"><div class="ni ni-red">🔴</div><div class="notif-text"><strong>Tank T-03 Low Fuel Level</strong><small>10:30 AM · Immediate refill required</small></div></div>
+  <div class="notif-item"><div class="ni ni-red">⚠️</div><div class="notif-text"><strong>Dispatch Delay – DSP-2036</strong><small>09:15 AM · 6-hour delay reported</small></div></div>
+  <div class="notif-item"><div class="ni ni-red">❌</div><div class="notif-text"><strong>Import Validation Failed</strong><small>08:45 AM · 150 records failed</small></div></div>
+  <div class="notif-item"><div class="ni ni-amber">⚠️</div><div class="notif-text"><strong>Unauthorized Access Attempt</strong><small>07:20 AM · Review security logs</small></div></div>
+  <div class="notif-item"><div class="ni ni-amber">🕐</div><div class="notif-text"><strong>18 approvals pending</strong><small>Today · Review in User Management</small></div></div>
+  <div class="notif-item"><div class="ni ni-green">✅</div><div class="notif-text"><strong>Monthly report generated</strong><small>Today · Available in Reports</small></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Navigation ──
+  function navigate(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelector('[data-page="' + page + '"]')?.classList.add('active');
+    closeNotif(); window.scrollTo(0,0);
+  }
+  document.querySelectorAll('.nav-item[data-page]').forEach(i => i.addEventListener('click', () => navigate(i.dataset.page)));
+  document.getElementById('logout-btn').addEventListener('click', () => { showToast('Logging out…'); setTimeout(() => window.location.href='home.html', 1500); });
+
+  // ── Notification ──
+  const notifBtn   = document.getElementById('notif-btn');
+  const notifPopup = document.getElementById('notif-popup');
+  const overlay    = document.getElementById('overlay');
+  notifBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = notifPopup.classList.toggle('open');
+    overlay.classList.toggle('open', open);
+    if (open) document.getElementById('notif-dot').style.display = 'none';
+  });
+  function closeNotif() { notifPopup.classList.remove('open'); overlay.classList.remove('open'); }
+  function markAllRead() { showToast('All notifications marked as read'); closeNotif(); }
+
+  // ── Toast ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── Chart helpers ──
+  const fnt = { family: 'Poppins', size: 10 };
+  const gc  = '#f0f5fa';
+
+  function donutChart(id, data, colors) {
+    new Chart(document.getElementById(id).getContext('2d'), {
+      type: 'doughnut',
+      data: { datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
+      options: { responsive: false, cutout: '65%', plugins: { legend: { display: false } } }
+    });
+  }
+  function lineChart(id, labels, datasets, yCb) {
+    new Chart(document.getElementById(id).getContext('2d'), {
+      type: 'line', data: { labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: datasets.length > 1, position: 'top', labels: { font: fnt, usePointStyle: true, boxWidth: 7 } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: fnt, color: '#8a9bac' } },
+          y: { grid: { color: gc }, ticks: { font: fnt, color: '#8a9bac', callback: yCb }, beginAtZero: false }
+        }
+      }
+    });
+  }
+  function barChart(id, labels, datasets, horiz, yCb) {
+    new Chart(document.getElementById(id).getContext('2d'), {
+      type: 'bar', data: { labels, datasets },
+      options: {
+        indexAxis: horiz ? 'y' : 'x', responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: datasets.length > 1, position: 'top', labels: { font: fnt, usePointStyle: true, boxWidth: 7 } } },
+        scales: {
+          x: { grid: { color: horiz ? gc : 'transparent' }, ticks: { font: fnt, color: '#8a9bac', callback: horiz ? yCb : undefined } },
+          y: { grid: { color: horiz ? 'transparent' : gc }, ticks: { font: fnt, color: '#8a9bac', callback: horiz ? undefined : yCb }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // Dashboard Charts
+  lineChart('dashStockChart',
+    ['01 Apr','07 Apr','14 Apr','21 Apr','30 Apr'],
+    [
+      { label:'Total Stock', data:[28000,26000,29000,25000,25450], borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,0.08)', fill:true, tension:0.4, pointRadius:2, borderWidth:2 },
+      { label:'Available',   data:[22000,20000,23000,19000,20000], borderColor:'#34d399', backgroundColor:'rgba(52,211,153,0.06)', fill:true, tension:0.4, pointRadius:2, borderWidth:2 }
+    ],
+    v => v/1000+'k'
+  );
+  donutChart('dashFuelDonut', [45,30,15,10], ['#2563eb','#f87c8d','#a78bfa','#34d399']);
+
+  // Reports Charts
+  lineChart('rptStockLine',
+    ['01 Apr','07 Apr','14 Apr','21 Apr','30 Apr'],
+    [
+      { label:'Total Stock', data:[28000,26000,29000,25000,25450], borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,0.06)', fill:true, tension:0.4, pointRadius:2, borderWidth:1.8 },
+      { label:'Available',   data:[22000,20000,23000,19000,20000], borderColor:'#34d399', backgroundColor:'rgba(52,211,153,0.04)', fill:true, tension:0.4, pointRadius:2, borderWidth:1.8 }
+    ],
+    v => v/1000+'k'
+  );
+  donutChart('rptIEDonut', [15200,12900], ['#2563eb','#f97316']);
+  barChart('rptIEBar',
+    ['W1 Apr','W2 Apr','W3 Apr','W4 Apr'],
+    [
+      { label:'Import', data:[4200,3800,4100,3100], backgroundColor:'#2563eb', borderRadius:4 },
+      { label:'Export', data:[3100,3400,3200,3200], backgroundColor:'#f97316', borderRadius:4 }
+    ],
+    false, v => v/1000+'k'
+  );
+  donutChart('rptFuelDonut', [45,30,15,10], ['#2563eb','#f5c842','#f87c8d','#34d399']);
+  barChart('rptTopTanks',
+    ['T-01','T-02','T-03','T-04','T-05'],
+    [{ data:[92,78,65,58,45], backgroundColor:['#2563eb','#16a34a','#f97316','#a78bfa','#f5c842'], borderRadius:4, borderSkipped:false }],
+    true, v => v+'%'
+  );
+  barChart('rptMonthStock',
+    ['Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26'],
+    [{ data:[22000,25000,27000,23000,26000,25450], backgroundColor:'#7eb8d4', borderRadius:5, borderSkipped:false }],
+    false, v => v/1000+'k'
+  );
+  lineChart('rptDailyIE',
+    ['01 Apr','07 Apr','14 Apr','21 Apr','30 Apr'],
+    [
+      { label:'Import', data:[800,1100,950,1300,1000], borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.06)', fill:true, tension:0.4, pointRadius:2, borderWidth:1.8 },
+      { label:'Export', data:[600,900,700,1100,850],  borderColor:'#f97316', backgroundColor:'rgba(249,115,22,0.06)', fill:true, tension:0.4, pointRadius:2, borderWidth:1.8 }
+    ]
+  );
+  donutChart('rptCatDonut', [35,20,20,15,10], ['#2563eb','#16a34a','#f97316','#a78bfa','#f5c842']);
+// Load real data from API
+const token = localStorage.getItem('token');
+
+async function loadDashboard() {
+  try {
+    // Get real user count
+    const usersRes = await fetch('http://127.0.0.1:8000/users', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const users = await usersRes.json();
+    document.getElementById('total-users').textContent = users.length;
+
+    // Get real transactions
+    const transRes = await fetch('http://127.0.0.1:8000/transactions', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const transactions = await transRes.json();
+    document.getElementById('total-transactions').textContent = transactions.length;
+
+    // Get real inventory
+    const invRes = await fetch('http://127.0.0.1:8000/inventory', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const inventory = await invRes.json();
+    const totalStock = inventory.reduce((sum, item) => sum + item.quantity, 0);
+    document.getElementById('total-stock').textContent = totalStock + 'KL';
+
+  } catch(e) {
+    console.log('Error loading dashboard:', e);
+  }
+}
+
+loadDashboard();
+// Load real users into table
+async function loadUsers() {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/users');
+    const users = await res.json();
+    const tbody = document.getElementById('users-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    document.getElementById('um-total-users').textContent = users.length;
+    document.getElementById('um-active-users').textContent = users.length;
+    document.getElementById('um-inactive-users').textContent = 0;
+    users.forEach((user, index) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>USR-00${index + 1}</td>
+          <td>${user.username}</td>
+          <td>${user.email || '-'}</td>
+          <td>${user.role}</td>
+          <td><span class="badge b-active">Active</span></td>
+          <td>${new Date(user.created_at).toLocaleDateString()}</td>
+          <td>
+            <button class="action-btn" onclick="deleteUser('${user.id}')">🗑️</button>
+          </td>
+        </tr>`;
+    });
+    document.getElementById('total-users').textContent = users.length;
+  } catch(e) {
+    console.log('Error loading users:', e);
+  }
+}
+
+// Delete user
+async function deleteUser(id) {
+  if (!confirm('Are you sure you want to delete this user?')) return;
+  try {
+    const res = await fetch('http://127.0.0.1:8000/users/' + id, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    showToast('User deleted successfully!');
+    loadUsers();
+  } catch(e) {
+    showToast('Error deleting user!');
+  }
+}
+
+loadUsers();
+// Add new user
+async function addNewUser() {
+  const username = document.getElementById('new-username').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const password = document.getElementById('new-password').value.trim();
+  const role = document.getElementById('new-role').value;
+
+  if (!username || !password || !role) {
+    showToast('Please fill all fields!');
+    return;
+  }
+
+  try {
+    const res = await fetch('http://127.0.0.1:8000/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password, role })
+    });
+    const data = await res.json();
+    if (data.message) {
+      showToast('User added successfully!');
+      document.getElementById('add-user-modal').style.display = 'none';
+      document.getElementById('new-username').value = '';
+      document.getElementById('new-email').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('new-role').value = '';
+      loadUsers();
+    } else {
+      showToast(data.detail || 'Error adding user!');
+    }
+  } catch(e) {
+    showToast('Cannot connect to server!');
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>PetroManage – About</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--navy:#0d1b2a;--navy2:#162032;--orange:#f07120;--orange2:#e55f0a;--white:#ffffff;--off:#e8edf3;--muted:#8da0b5;--font:'Barlow',sans-serif}
+    html,body{min-height:100%}
+    
+    body{font-family:var(--font);background:var(--navy);color:var(--white);overflow-x:hidden;display:flex;flex-direction:column}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;box-shadow:0 2px 20px rgba(0,0,0,.4)}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .logo-text{font-size:1.35rem;font-weight:700;letter-spacing:-.5px;color:var(--white)}
+    .logo-text span{color:var(--orange)}
+    .nav-links{display:flex;gap:36px;list-style:none;align-items:center}
+    .nav-links a{color:var(--white);text-decoration:none;font-size:.95rem;font-weight:500;transition:color .2s}
+    .nav-links a:hover{color:var(--orange)}
+    .active-link{border:2px solid var(--orange)!important;border-radius:6px;padding:6px 18px!important;font-weight:600!important}
+    .btn-login{background:var(--orange);color:var(--white);border:none;border-radius:6px;padding:9px 26px;font-family:var(--font);font-size:.95rem;font-weight:600;cursor:pointer;transition:background .2s,transform .15s}
+    .btn-login:hover{background:var(--orange2);transform:translateY(-1px)}
+    footer{background:var(--navy2);padding:28px 40px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:20px;border-top:1px solid rgba(255,255,255,.07)}
+    .footer-brand p{font-size:.78rem;color:var(--muted);margin-top:4px}
+    .footer-links{display:flex;justify-content:center;flex-direction:column;align-items:center;gap:6px}
+    .footer-links-row{display:flex;align-items:center}
+    .footer-links-row a{color:var(--off);text-decoration:none;font-size:.85rem;padding:0 14px;border-right:1px solid rgba(255,255,255,.2);transition:color .2s}
+    .footer-links-row a:last-child{border-right:none}
+    .footer-links-row a:hover{color:var(--orange)}
+    .footer-copy{font-size:.75rem;color:var(--muted);margin-top:8px;text-align:center}
+    .footer-contact{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+    .contact-item{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--off)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+    .about-page{position:relative;padding:84px 0 0}
+    .about-page::before{
+      content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+
+  background-image:
+    linear-gradient(to right, rgba(13,27,42,.90) 42%, rgba(13,27,42,.38) 100%),
+    url('images/image.png'); /* your PNG file path */
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+    }
+    .about-content{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:40px 36px 60px;display:flex;flex-direction:column;gap:36px}
+    .section-title{font-family:'Barlow Condensed',sans-serif;font-size:1.9rem;font-weight:800;color:var(--white);letter-spacing:-.3px}
+    .section-title span{color:var(--orange)}
+    .subtitle-pill{display:inline-block;border:1.5px solid var(--orange);border-radius:6px;padding:10px 20px;font-size:.95rem;font-weight:600;color:var(--white);margin-top:12px;background:rgba(240,113,32,.08)}
+    .desc-section,.benefits-section{display:flex;flex-direction:column;gap:14px}
+    .desc-heading,.benefits-heading{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;color:var(--white)}
+    .desc-heading span,.benefits-heading span{color:var(--orange)}
+    .desc-box{border:1.5px solid rgba(240,113,32,.5);border-radius:8px;padding:22px 24px;background:rgba(13,27,42,.55);backdrop-filter:blur(6px)}
+    .desc-box p{font-size:.97rem;line-height:1.8;color:var(--off);text-align:justify}
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .benefit-card{border:1.5px solid rgba(240,113,32,.45);border-radius:8px;padding:22px 20px;background:rgba(13,27,42,.55);backdrop-filter:blur(6px);display:flex;align-items:flex-start;gap:14px;transition:border-color .25s,background .25s,transform .22s;cursor:default}
+    .benefit-card:hover{border-color:var(--orange);background:rgba(240,113,32,.12);transform:translateY(-3px)}
+    .benefit-icon svg{width:22px;height:22px;color:var(--orange)}
+    .benefit-card p{font-size:.92rem;line-height:1.5;color:var(--off);font-weight:500}
+    .about-title-block{animation:fadeUp .6s ease both}
+    .desc-section{animation:fadeUp .6s .1s ease both}
+    .benefits-section{animation:fadeUp .6s .2s ease both}
+    @media(max-width:700px){nav{padding:0 20px}.nav-links{display:none}.about-content{padding:30px 20px 40px}.benefits-grid{grid-template-columns:1fr}footer{grid-template-columns:1fr;text-align:center}.footer-contact{align-items:center}}
+    .sample{ text-decoration: none; color:white;}
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="logo" href="#"><svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="18" fill="#1c2d42"/><path d="M18 6C18 6 12 13 12 19a6 6 0 0012 0c0-3-2-5-2-5s-1 3-3 3c-1.5 0-2.5-1.5-2-3.5C17.5 11.5 18 6 18 6z" fill="#f07120"/><path d="M18 14c0 0-2 3-2 5.5a2 2 0 004 0C20 17 18 14 18 14z" fill="#ffa040"/></svg><span class="logo-text">Petro<span>Manage</span></span></a>
+    <ul class="nav-links">
+      <li><a href="home.html">Home</a></li><li><a href="feature.html">Features</a></li><li><a href="about.html" class="active-link">About</a></li><li><a href="contact.html">Contact</a></li>
+    </ul>
+    <a href="signup.html"><button class="btn-login">SignUp</button></a>
+  </nav>
+  <main class="about-page">
+    <div class="about-content">
+      <div class="about-title-block">
+        <h1 class="section-title">About <span>PetroManage</span></h1>
+        <div class="subtitle-pill">Transforming Petroleum Operations Through Smart Digital Solution</div>
+      </div>
+      <div class="desc-section">
+        <h2 class="desc-heading">Desc<span>ription</span></h2>
+        <div class="desc-box"><p>PetroManage is a centralized petroleum management platform designed to streamline fuel inventory, distribution tracking, and compliance reporting. It helps organizations handle critical fuel data efficiently while ensuring safety, accuracy, and operational transparency across all levels.</p></div>
+      </div>
+      <div class="benefits-section">
+        <h2 class="benefits-heading">Key <span>Benefits</span></h2>
+        <div class="benefits-grid">
+          <div class="benefit-card"><div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><p>Reduces manual errors in fuel data handling</p></div>
+          <div class="benefit-card"><div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><p>Improves decision-making with real-time insights</p></div>
+          <div class="benefit-card"><div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><p>Ensures compliance with safety and regulatory standards</p></div>
+          <div class="benefit-card"><div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><p>Provide Transparency in inventory and transactions</p></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <div class="footer-brand">
+      <a class="logo" href="#" style="margin-bottom:4px;display:inline-flex;"><svg width="28" height="28" viewBox="0 0 36 36" fill="none" style="margin-right:8px"><circle cx="18" cy="18" r="18" fill="#1c2d42"/><path d="M18 6C18 6 12 13 12 19a6 6 0 0012 0c0-3-2-5-2-5s-1 3-3 3c-1.5 0-2.5-1.5-2-3.5C17.5 11.5 18 6 18 6z" fill="#f07120"/><path d="M18 14c0 0-2 3-2 5.5a2 2 0 004 0C20 17 18 14 18 14z" fill="#ffa040"/></svg><span class="logo-text">Petro<span>Manage</span></span></a>
+      <p>Smart Petroleum Management Platform</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-links-row"><a href="home.html">Home</a><a href="feature.html">Features</a><a href="about.html">About</a><a href="contact.html">Contact</a></div>
+      <p class="footer-copy">&#169; 2026 All Rights Reserved</p>
+    </div>
+    <div class="footer-contact">
+      <div class="contact-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>support@petromanage.com</div>
+      <div class="contact-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.09 5.18 2 2 0 015.07 3h3a2 2 0 012 1.72c.13 1 .37 1.97.72 2.9a2 2 0 01-.45 2.11L9.09 10.91a16 16 0 006 6l1.18-1.18a2 2 0 012.11-.45c.93.35 1.9.59 2.9.72A2 2 0 0122 16.92z"/></svg>+91 98765 43210</div>
+      <div class="contact-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>Chennai, India</div>
+    </div>
+  </footer>
+  <script>document.querySelectorAll('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));window.addEventListener('scroll',()=>{document.querySelector('nav').style.boxShadow=window.scrollY>10?'0 4px 30px rgba(0,0,0,.6)':'0 2px 20px rgba(0,0,0,.4)'});</script>
+</body></html>

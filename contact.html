@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PetroManage – Contact Us</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:   #0d1b2a;
+      --navy2:  #162032;
+      --navy3:  #1c2d42;
+      --orange: #f07120;
+      --orange2:#e55f0a;
+      --white:  #ffffff;
+      --off:    #e8edf3;
+      --muted:  #8da0b5;
+      --font:   'Barlow', sans-serif;
+    }
+    html, body { height: 100%; }
+    body { font-family: var(--font); background: var(--navy); color: var(--white); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 64px;
+      box-shadow: 0 2px 20px rgba(0,0,0,.4);
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-text { font-size: 1.35rem; font-weight: 700; letter-spacing: -.5px; color: var(--white); }
+    .logo-text span { color: var(--orange); }
+    .nav-links { display: flex; gap: 36px; list-style: none; align-items: center; }
+    .nav-links a { color: var(--white); text-decoration: none; font-size: .95rem; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--orange); }
+    .nav-links .active-link {
+      color: var(--white); border: 2px solid var(--orange);
+      border-radius: 6px; padding: 6px 18px; font-weight: 600;
+    }
+    .nav-links .active-link:hover { color: var(--orange); }
+    .btn-login {
+      background: var(--orange); color: var(--white); border: none; border-radius: 6px;
+      padding: 9px 26px; font-family: var(--font); font-size: .95rem; font-weight: 600;
+      cursor: pointer; transition: background .2s, transform .15s;
+    }
+    .btn-login:hover { background: var(--orange2); transform: translateY(-1px); }
+
+    /* CONTACT PAGE */
+    .contact-page {
+      flex: 1;
+      position: relative;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 100px 40px 60px;
+      min-height: calc(100vh - 90px);
+    }
+    .contact-page::before {
+      content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+
+  background-image:
+    linear-gradient(to right, rgba(13,27,42,.90) 42%, rgba(13,27,42,.38) 100%),
+    url('images/image.png'); /* your PNG file path */
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+    }
+
+    .contact-heading {
+      position: relative; z-index: 1;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 800; letter-spacing: -.5px;
+      margin-bottom: 36px; text-align: center;
+    }
+    .contact-heading em { color: var(--orange); font-style: normal; }
+
+    .contact-grid {
+      position: relative; z-index: 1;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 24px; width: 100%; max-width: 780px;
+    }
+
+    /* Info Card */
+    .info-card {
+      background: rgba(13,27,42,.72);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 32px 28px;
+      backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; gap: 18px;
+    }
+    .info-item { display: flex; flex-direction: column; gap: 8px; }
+    .info-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 1.05rem; font-weight: 700; color: var(--white);
+    }
+    .info-label svg { color: var(--orange); flex-shrink: 0; }
+    .info-value {
+      background: rgba(240,113,32,.25);
+      border: 1px solid rgba(240,113,32,.35);
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: .95rem; color: var(--off); font-weight: 500;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: rgba(13,27,42,.72);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 32px 28px;
+      backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .form-row {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .form-row label {
+      font-size: .9rem; font-weight: 600; color: var(--off);
+      min-width: 72px;
+    }
+    .form-row input,
+    .form-row textarea {
+      flex: 1;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 6px;
+      padding: 9px 14px;
+      font-family: var(--font); font-size: .9rem; color: var(--white);
+      outline: none; transition: border-color .2s, background .2s;
+      resize: none;
+    }
+    .form-row input:focus,
+    .form-row textarea:focus {
+      border-color: var(--orange);
+      background: rgba(255,255,255,.11);
+    }
+    .form-row textarea { height: 80px; }
+
+    .btn-send {
+      align-self: flex-end;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--off); color: var(--navy);
+      border: none; border-radius: 6px;
+      padding: 11px 28px;
+      font-family: var(--font); font-size: .95rem; font-weight: 700;
+      cursor: pointer; transition: background .2s, transform .15s;
+      margin-top: 4px;
+    }
+    .btn-send:hover { background: #ffffff; transform: translateY(-1px); }
+
+    /* FOOTER */
+    footer {
+      background: var(--navy2); padding: 28px 40px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      align-items: center; gap: 20px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .footer-brand p { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+    .footer-links { display: flex; justify-content: center; flex-direction: column; align-items: center; gap: 6px; }
+    .footer-links-row { display: flex; align-items: center; }
+    .footer-links-row a { color: var(--off); text-decoration: none; font-size: .85rem; padding: 0 14px; border-right: 1px solid rgba(255,255,255,.2); transition: color .2s; }
+    .footer-links-row a:last-child { border-right: none; }
+    .footer-links-row a:hover { color: var(--orange); }
+    .footer-copy { font-size: .75rem; color: var(--muted); margin-top: 8px; text-align: center; }
+    .footer-contact { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    .contact-item { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--off); }
+
+    /* Animations */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+    .contact-heading { animation: fadeUp .6s ease both; }
+    .info-card        { animation: fadeUp .6s .1s ease both; }
+    .form-card        { animation: fadeUp .6s .2s ease both; }
+
+    @media (max-width: 700px) {
+      nav { padding: 0 20px; } .nav-links { display: none; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .contact-page { padding: 90px 20px 40px; }
+      footer { grid-template-columns: 1fr; text-align: center; }
+      .footer-contact { align-items: center; }
+    }
+    .sample      { text-decoration: none; color:white;}
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo" href="#">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="18" fill="#1c2d42"/>
+        <path d="M18 6C18 6 12 13 12 19a6 6 0 0012 0c0-3-2-5-2-5s-1 3-3 3c-1.5 0-2.5-1.5-2-3.5C17.5 11.5 18 6 18 6z" fill="#f07120"/>
+        <path d="M18 14c0 0-2 3-2 5.5a2 2 0 004 0C20 17 18 14 18 14z" fill="#ffa040"/>
+      </svg>
+      <span class="logo-text">Petro<span>Manage</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="home.html">Home</a></li>
+      <li><a href="feature.html">Features</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html" class="active-link">Contact</a></li>
+    </ul>
+    <a href="signup.html"><button class="btn-login">SignUp</button></a>
+  </nav>
+
+  <!-- CONTACT SECTION -->
+  <main class="contact-page">
+    <h1 class="contact-heading">Get in <em>Touch</em></h1>
+
+    <div class="contact-grid">
+
+      <!-- Info Card -->
+      <div class="info-card">
+        <div class="info-item">
+          <div class="info-label">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+            Location
+          </div>
+          <div class="info-value">Chennai, India</div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-label">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m2 7 10 7 10-7"/>
+            </svg>
+            Email
+          </div>
+          <div class="info-value">abcd@gmail.com</div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-label">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.09 5.18 2 2 0 015.07 3h3a2 2 0 012 1.72c.13 1 .37 1.97.72 2.9a2 2 0 01-.45 2.11L9.09 10.91a16 16 0 006 6l1.18-1.18a2 2 0 012.11-.45c.93.35 1.9.59 2.9.72A2 2 0 0122 16.92z"/>
+            </svg>
+            Phone Number
+          </div>
+          <div class="info-value">9876540123</div>
+        </div>
+      </div>
+
+      <!-- Form Card -->
+      <div class="form-card">
+        <div class="form-row">
+          <label for="name">Name</label>
+          <input type="text" id="name" placeholder="" />
+        </div>
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="" />
+        </div>
+        <div class="form-row">
+          <label for="msg">Message</label>
+          <textarea id="msg"></textarea>
+        </div>
+        <button class="btn-send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+          Send Message
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">
+      <a class="logo" href="#" style="margin-bottom:4px;display:inline-flex;">
+        <svg width="28" height="28" viewBox="0 0 36 36" fill="none" style="margin-right:8px">
+          <circle cx="18" cy="18" r="18" fill="#1c2d42"/>
+          <path d="M18 6C18 6 12 13 12 19a6 6 0 0012 0c0-3-2-5-2-5s-1 3-3 3c-1.5 0-2.5-1.5-2-3.5C17.5 11.5 18 6 18 6z" fill="#f07120"/>
+          <path d="M18 14c0 0-2 3-2 5.5a2 2 0 004 0C20 17 18 14 18 14z" fill="#ffa040"/>
+        </svg>
+        <span class="logo-text">Petro<span>Manage</span></span>
+      </a>
+      <p>Smart Petroleum Management Platform</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-links-row">
+        <a href="home.html">Home</a><a href="feature.html">Features</a><a href="about.html">About</a><a href="contact.html">Contact</a>
+      </div>
+      <p class="footer-copy">&#169; 2026 All Rights Reserved</p>
+    </div>
+    <div class="footer-contact">
+      <div class="contact-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/>
+        </svg>support@petromanage.com
+      </div>
+      <div class="contact-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.09 5.18 2 2 0 015.07 3h3a2 2 0 012 1.72c.13 1 .37 1.97.72 2.9a2 2 0 01-.45 2.11L9.09 10.91a16 16 0 006 6l1.18-1.18a2 2 0 012.11-.45c.93.35 1.9.59 2.9.72A2 2 0 0122 16.92z"/>
+        </svg>+91 98765 43210
+      </div>
+      <div class="contact-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f07120" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
+        </svg>Chennai, India
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll('a[href="#"]').forEach(a => a.addEventListener('click', e => e.preventDefault()));
+    window.addEventListener('scroll', () => {
+      document.querySelector('nav').style.boxShadow = window.scrollY > 10
+        ? '0 4px 30px rgba(0,0,0,.6)' : '0 2px 20px rgba(0,0,0,.4)';
+    });
+    document.querySelector('.btn-send').addEventListener('click', () => {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const msg = document.getElementById('msg').value.trim();
+      if (!name || !email || !msg) {
+        alert('Please fill in all fields.');
+        return;
+      }
+      alert('Message sent successfully!');
+      document.getElementById('name').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('msg').value = '';
+    });
+  </script>
+</body>
+</html>

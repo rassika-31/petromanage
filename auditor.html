@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PetroManage – Auditor Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --navy: #1a2e4a;
+      --orange: #e87722;
+      --orange-dark: #d06518;
+      --sidebar-w: 160px;
+      --blue-bg: #c8dff0;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: var(--blue-bg); color: var(--navy); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ══ LAYOUT ══ */
+    .app { display: flex; flex: 1; }
+
+    /* ══ SIDEBAR ══ */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--navy);
+      display: flex; flex-direction: column; align-items: center;
+      padding-top: 0;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 5px;
+      padding: 18px 12px 24px; text-decoration: none; width: 100%;
+    }
+    .sidebar-logo svg { width: 20px; height: 20px; flex-shrink: 0; }
+    .sidebar-logo .petro  { color: var(--orange); font-weight: 700; font-size: 15px; }
+    .sidebar-logo .manage { color: #fff; font-weight: 700; font-size: 15px; }
+
+    .nav-item {
+      width: 100%; padding: 15px 20px; text-align: left;
+      color: #a8c0d6; font-size: 14px; font-weight: 500;
+      cursor: pointer; border-left: 3px solid transparent;
+      transition: all 0.2s; user-select: none;
+    }
+    .nav-item:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .nav-item.active { background: var(--orange); color: #fff; border-left-color: #fff; }
+
+    /* ══ MAIN CONTENT ══ */
+    .content { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ══ HEADER ══ */
+    .header {
+      height: 62px; background: #fff;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: 0 30px; border-bottom: 1px solid #d0dde8;
+      gap: 14px; position: sticky; top: 0; z-index: 90;
+    }
+    .header-title { font-size: 26px; font-weight: 800; color: var(--navy); margin-right: auto; font-style: italic; letter-spacing: -0.5px; }
+    .header-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--navy);
+      border: 1.5px solid #d0dde8; transition: background 0.2s; position: relative;
+    }
+    .header-icon:hover { background: #eaf4fb; }
+    .notif-dot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: #e03030; border-radius: 50%; border: 1.5px solid #fff; }
+
+    /* ══ NOTIFICATION POPUP ══ */
+    .notif-popup {
+      position: fixed; top: 70px; right: 20px; width: 315px;
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(26,46,74,0.18);
+      z-index: 200; display: none; overflow: hidden;
+      animation: popIn 0.22s ease;
+    }
+    .notif-popup.open { display: block; }
+    @keyframes popIn { from{opacity:0;transform:translateY(-8px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+    .notif-header { padding: 13px 18px 9px; font-weight: 700; font-size: 13.5px; color: var(--navy); border-bottom: 1px solid #e8f0f7; display: flex; justify-content: space-between; align-items: center; }
+    .notif-header span { font-size: 11px; color: var(--orange); cursor: pointer; font-weight: 500; }
+    .notif-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 16px; border-bottom: 1px solid #f0f5fa; transition: background 0.15s; cursor: pointer; }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: #f5fbff; }
+    .ni { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
+    .ni-red   { background: #fff0f0; }
+    .ni-amber { background: #fff8ed; }
+    .ni-green { background: #f0fff4; }
+    .ni-blue  { background: #eaf4fb; }
+    .notif-text strong { font-size: 12px; color: var(--navy); display: block; }
+    .notif-text small  { font-size: 11px; color: #8a9bac; }
+
+    /* ══ PAGES ══ */
+    .page { display: none; padding: 28px 32px; flex: 1; }
+    .page.active { display: block; }
+
+    /* ══ STAT CARDS ══ */
+    .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-bottom: 26px; }
+    .stat-card {
+      background: #fff; border-radius: 14px; padding: 20px 22px 18px;
+      box-shadow: 0 2px 10px rgba(26,46,74,0.07);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .stat-card-icon { font-size: 28px; flex-shrink: 0; }
+    .stat-label { font-size: 12px; color: #6b7a8d; font-weight: 500; margin-bottom: 4px; }
+    .stat-value { font-size: 22px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+    .stat-value.orange { color: var(--orange); }
+
+    /* ══ TWO-COL GRID ══ */
+    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
+    /* ══ WIDGET ══ */
+    .widget { background: #fff; border-radius: 16px; padding: 22px 24px; box-shadow: 0 2px 10px rgba(26,46,74,0.07); }
+    .widget-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+
+    /* ══ BILLS TABLE ══ */
+    .bills-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .bills-table th { background: #f0f5fa; color: #6b7a8d; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 12px; border-radius: 6px; }
+    .bills-table td { padding: 11px 12px; border-bottom: 1px solid #f0f5fa; color: var(--navy); }
+    .bills-table tr:last-child td { border-bottom: none; }
+    .bills-table tr:hover td { background: #f8fcff; }
+    .badge-paid { display: inline-block; background: #e6f9f0; color: #1a8f55; padding: 4px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+    .badge-pending-pay { display: inline-block; background: #fff3e0; color: var(--orange); padding: 4px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+    .badge-overdue { display: inline-block; background: #ffeaea; color: #e03030; padding: 4px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+    .view-link { color: var(--orange); font-size: 13px; font-weight: 500; cursor: pointer; display: inline-block; margin-top: 14px; }
+    .view-link:hover { text-decoration: underline; }
+
+    /* ══ PIE CHART AREA ══ */
+    .pie-wrap { display: flex; align-items: center; gap: 28px; justify-content: center; margin-top: 8px; }
+    .pie-canvas-wrap { flex-shrink: 0; }
+    .pie-legend { display: flex; flex-direction: column; gap: 10px; }
+    .pie-legend-item { display: flex; align-items: center; gap: 9px; font-size: 13px; color: #4a5568; }
+    .pie-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ══ ANALYSIS PAGE ══ */
+    .analysis-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 22px; }
+    .analysis-card { background: #fff; border-radius: 12px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(26,46,74,0.07); text-align: center; }
+    .analysis-card .num { font-size: 24px; font-weight: 700; color: var(--navy); }
+    .analysis-card .lbl { font-size: 12px; color: #6b7a8d; margin-top: 3px; }
+    .chart-box { height: 210px; }
+    .chart-box-lg { height: 240px; }
+
+    /* ══ BILLS & COSTS PAGE ══ */
+    .bc-filters { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+    .filter-group { display: flex; gap: 8px; }
+    .filter-btn { padding: 7px 18px; border-radius: 20px; border: 1.5px solid #cdd6e0; background: #fff; font-family: 'Poppins',sans-serif; font-size: 12px; font-weight: 500; color: #6b7a8d; cursor: pointer; transition: all 0.2s; }
+    .filter-btn.active, .filter-btn:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
+    .full-bills-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .full-bills-table th { background: var(--navy); color: #fff; padding: 11px 14px; text-align: left; font-weight: 600; font-size: 12.5px; }
+    .full-bills-table th:first-child { border-radius: 8px 0 0 0; }
+    .full-bills-table th:last-child  { border-radius: 0 8px 0 0; }
+    .full-bills-table td { padding: 11px 14px; border-bottom: 1px solid #eef4fa; }
+    .full-bills-table tr:hover td { background: #f5fbff; }
+    .summary-row { display: flex; gap: 16px; margin-top: 18px; }
+    .summary-box { flex: 1; background: #fff; border-radius: 12px; padding: 16px 18px; text-align: center; box-shadow: 0 2px 8px rgba(26,46,74,0.07); }
+    .summary-box .s-num { font-size: 20px; font-weight: 700; color: var(--navy); }
+    .summary-box .s-lbl { font-size: 11.5px; color: #6b7a8d; margin-top: 3px; }
+
+    /* ══ PROFILE PAGE ══ */
+    .profile-card { background: #fff; border-radius: 16px; padding: 32px 36px; box-shadow: 0 2px 12px rgba(26,46,74,0.09); max-width: 680px; }
+    .profile-photo-row { display: flex; align-items: center; gap: 22px; margin-bottom: 28px; }
+    .avatar-circle { width: 80px; height: 80px; border-radius: 50%; background: #d0dde8; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #6b7a8d; position: relative; flex-shrink: 0; }
+    .avatar-edit { position: absolute; bottom: 2px; right: 2px; width: 22px; height: 22px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; cursor: pointer; }
+    .photo-btn { padding: 10px 22px; border-radius: 8px; font-family: 'Poppins',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .upload-btn { background: var(--navy); color: #fff; border: none; margin-right: 10px; }
+    .upload-btn:hover { background: #243d5f; }
+    .remove-btn { background: var(--orange); color: #fff; border: none; }
+    .remove-btn:hover { background: var(--orange-dark); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+    .form-field label { font-size: 12px; color: #6b7a8d; font-weight: 500; }
+    .form-field input { border: 1.5px solid #cdd6e0; border-radius: 8px; padding: 9px 12px; font-family: 'Poppins',sans-serif; font-size: 13px; color: var(--navy); outline: none; transition: border-color 0.2s; }
+    .form-field input:focus { border-color: #7eb8d4; }
+    .save-btn { margin-top: 22px; padding: 11px 32px; background: var(--orange); color: #fff; border: none; border-radius: 8px; font-family: 'Poppins',sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .save-btn:hover { background: var(--orange-dark); }
+
+    /* ══ FOOTER ══ */
+    footer { background: var(--navy); color: #fff; padding: 18px 32px 18px calc(var(--sidebar-w) + 32px); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+    .footer-brand .brand-name { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+    .footer-brand .tagline { font-size: 11px; color: #8fa8bf; margin-top: 2px; }
+    .footer-nav { display: flex; align-items: center; font-size: 13px; }
+    .footer-nav a { color: #fff; text-decoration: none; padding: 0 14px; border-right: 1px solid #3a5068; transition: color 0.2s; }
+    .footer-nav a:first-child { border-left: 1px solid #3a5068; }
+    .footer-nav a:hover { color: var(--orange); }
+    .footer-copy { font-size: 11px; color: #8fa8bf; margin-top: 5px; text-align: center; }
+    .footer-contact { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #c8d8e4; }
+    .footer-contact span { display: flex; align-items: center; gap: 7px; }
+    .petro  { color: var(--orange); }
+    .manage { color: #fff; }
+
+    /* ══ OVERLAY & TOAST ══ */
+    .overlay { position: fixed; inset: 0; z-index: 150; display: none; }
+    .overlay.open { display: block; }
+    .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--navy); color: #fff; padding: 11px 26px; border-radius: 8px; font-size: 13.5px; opacity: 0; transition: all 0.3s ease; z-index: 500; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* section label */
+    .section-label { font-size: 12px; font-weight: 600; color: #8a9bac; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ══ SIDEBAR ══ -->
+  <nav class="sidebar">
+    <a class="sidebar-logo" href="#">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 7 7.5 7 13a5 5 0 0010 0c0-2.5-1.5-4.5-2-5.5 0 0-.5 2-2 3C12 8 12 2 12 2z" fill="#e87722"/></svg>
+      <span class="petro">Petro</span><span class="manage">Manage</span>
+    </a>
+    <div class="nav-item active" data-page="dashboard">Dashboard</div>
+    <div class="nav-item" data-page="billscosts">Bills &amp; Costs</div>
+    <div class="nav-item" data-page="analysis">Analysis</div>
+    <div class="nav-item" data-page="profile">Profile</div>
+    <div class="nav-item" id="logout-btn">Logout</div>
+  </nav>
+
+  <!-- ══ MAIN ══ -->
+  <div class="content">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-title">Auditor</div>
+      <div class="header-icon" id="notif-btn" title="Notifications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="notif-dot" id="notif-dot"></span>
+      </div>
+      <div class="header-icon" title="Profile" onclick="navigate('profile')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         DASHBOARD PAGE
+    ══════════════════════════ -->
+    <div class="page active" id="page-dashboard">
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon">🔄</div>
+          <div><div class="stat-label">Total Transactions</div><div class="stat-value">1,248</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">✅</div>
+          <div><div class="stat-label">Total Amount</div><div class="stat-value">₹ 5,48,90,000</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">📄</div>
+          <div><div class="stat-label">Audit Reports</div><div class="stat-value">12</div></div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- Recent Bills / Costs -->
+        <div class="widget">
+          <div class="widget-title">Recent Bills/ Costs</div>
+          <table class="bills-table">
+            <thead>
+              <tr><th>Invoice No.</th><th>Description</th><th>Amount</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>INV-00125</td><td>Diesel Purchase</td><td>₹ 25,40,000</td><td><span class="badge-paid">Paid</span></td></tr>
+              <tr><td>INV-00126</td><td>Transport Charges</td><td>₹ 4,80,000</td><td><span class="badge-paid">Paid</span></td></tr>
+              <tr><td>INV-00127</td><td>Import Duty &amp; Tax</td><td>₹ 3,20,000</td><td><span class="badge-paid">Paid</span></td></tr>
+            </tbody>
+          </table>
+          <a class="view-link" onclick="navigate('billscosts')">View All Tanks →</a>
+        </div>
+
+        <!-- Cost Analysis Pie -->
+        <div class="widget">
+          <div class="widget-title">Cost Analysis ( This Month )</div>
+          <div class="pie-wrap">
+            <div class="pie-canvas-wrap">
+              <canvas id="dashPieChart" width="200" height="200"></canvas>
+            </div>
+            <div class="pie-legend">
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#2563eb"></div>Import Cost &nbsp; 65%</div>
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#16a34a"></div>Transport &nbsp;&nbsp;&nbsp; 20%</div>
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#d1d5db"></div>Storage &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10%</div>
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#f97316"></div>Others &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         BILLS & COSTS PAGE
+    ══════════════════════════ -->
+    <div class="page" id="page-billscosts">
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card-icon">🔄</div><div><div class="stat-label">Total Transactions</div><div class="stat-value">1,248</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon">✅</div><div><div class="stat-label">Total Amount</div><div class="stat-value">₹ 5,48,90,000</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon">📄</div><div><div class="stat-label">Audit Reports</div><div class="stat-value">12</div></div></div>
+      </div>
+
+      <div class="dash-grid" style="margin-bottom:20px;">
+        <div class="widget" style="grid-column:1/-1;">
+          <div class="widget-title">All Bills &amp; Costs</div>
+          <div class="bc-filters">
+            <div class="filter-group">
+              <button class="filter-btn active" onclick="filterBills(this,'all')">All</button>
+              <button class="filter-btn" onclick="filterBills(this,'paid')">Paid</button>
+              <button class="filter-btn" onclick="filterBills(this,'pending')">Pending</button>
+              <button class="filter-btn" onclick="filterBills(this,'overdue')">Overdue</button>
+            </div>
+          </div>
+          <table class="full-bills-table">
+            <thead><tr><th>Invoice No.</th><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody id="bills-tbody"></tbody>
+          </table>
+          <div class="summary-row">
+            <div class="summary-box"><div class="s-num" style="color:#1a8f55">₹ 33,40,000</div><div class="s-lbl">Total Paid</div></div>
+            <div class="summary-box"><div class="s-num" style="color:var(--orange)">₹ 8,60,000</div><div class="s-lbl">Total Pending</div></div>
+            <div class="summary-box"><div class="s-num" style="color:#e03030">₹ 4,20,000</div><div class="s-lbl">Total Overdue</div></div>
+            <div class="summary-box"><div class="s-num">₹ 46,20,000</div><div class="s-lbl">Grand Total</div></div>
+          </div>
+        </div>
+
+        <!-- Cost Analysis repeated on Bills page -->
+        <div class="widget">
+          <div class="widget-title">Cost Analysis ( This Month )</div>
+          <div class="pie-wrap">
+            <div class="pie-canvas-wrap">
+              <canvas id="bcPieChart" width="180" height="180"></canvas>
+            </div>
+            <div class="pie-legend">
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#2563eb"></div>Import Cost &nbsp; 65%</div>
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#16a34a"></div>Transport &nbsp;&nbsp;&nbsp; 20%</div>
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#d1d5db"></div>Storage &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10%</div>
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#f97316"></div>Others &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-title">Monthly Spend Trend</div>
+          <div class="chart-box"><canvas id="bcLineChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         ANALYSIS PAGE
+    ══════════════════════════ -->
+    <div class="page" id="page-analysis">
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card-icon">🔄</div><div><div class="stat-label">Total Transactions</div><div class="stat-value">1,248</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon">✅</div><div><div class="stat-label">Total Amount</div><div class="stat-value">₹ 5,48,90,000</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon">📄</div><div><div class="stat-label">Audit Reports</div><div class="stat-value">12</div></div></div>
+      </div>
+
+      <div class="analysis-cards">
+        <div class="analysis-card"><div class="num">₹ 33.4L</div><div class="lbl">Paid This Month</div></div>
+        <div class="analysis-card"><div class="num" style="color:var(--orange)">₹ 8.6L</div><div class="lbl">Pending Payments</div></div>
+        <div class="analysis-card"><div class="num" style="color:#e03030">₹ 4.2L</div><div class="lbl">Overdue Amount</div></div>
+      </div>
+
+      <div class="dash-grid" style="margin-bottom:20px;">
+        <div class="widget">
+          <div class="widget-title">Monthly Transaction Volume</div>
+          <div class="chart-box-lg"><canvas id="txnBarChart"></canvas></div>
+        </div>
+        <div class="widget">
+          <div class="widget-title">Cost Breakdown ( This Month )</div>
+          <div class="pie-wrap" style="margin-top:20px;">
+            <canvas id="anlPieChart" width="180" height="180"></canvas>
+            <div class="pie-legend">
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#2563eb"></div>Import Cost &nbsp; 65%</div>
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#16a34a"></div>Transport &nbsp;&nbsp;&nbsp; 20%</div>
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#d1d5db"></div>Storage &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10%</div>
+              <div class="pie-legend-item"><div class="pie-dot" style="background:#f97316"></div>Others &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5%</div>
+            </div>
+          </div>
+        </div>
+        <div class="widget" style="grid-column:1/-1;">
+          <div class="widget-title">Cumulative Spend vs Budget</div>
+          <div class="chart-box-lg"><canvas id="spendLineChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Recent Bills on Analysis page -->
+      <div class="widget">
+        <div class="widget-title">Recent Bills/ Costs</div>
+        <table class="bills-table">
+          <thead><tr><th>Invoice No.</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>INV-00125</td><td>Diesel Purchase</td><td>₹ 25,40,000</td><td><span class="badge-paid">Paid</span></td></tr>
+            <tr><td>INV-00126</td><td>Transport Charges</td><td>₹ 4,80,000</td><td><span class="badge-paid">Paid</span></td></tr>
+            <tr><td>INV-00127</td><td>Import Duty &amp; Tax</td><td>₹ 3,20,000</td><td><span class="badge-paid">Paid</span></td></tr>
+          </tbody>
+        </table>
+        <a class="view-link" onclick="navigate('billscosts')">View All Invoices →</a>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         PROFILE PAGE
+    ══════════════════════════ -->
+    <div class="page" id="page-profile">
+      <div class="profile-card">
+        <div class="profile-photo-row">
+          <div class="avatar-circle">
+            👤
+            <div class="avatar-edit">✏</div>
+          </div>
+          <div>
+            <button class="photo-btn upload-btn">Upload Photo</button>
+            <button class="photo-btn remove-btn">Remove Photo</button>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>First Name</label><input type="text" value="Tom"/></div>
+          <div class="form-field"><label>Last Name</label><input type="text" value="G"/></div>
+          <div class="form-field"><label>Email</label><input type="email" value="abc@gmail.com"/></div>
+          <div class="form-field"><label>Mobile Number</label><input type="tel" value="+91 33457899"/></div>
+          <div class="form-field"><label>City</label><input type="text" value="Chennai"/></div>
+          <div class="form-field"><label>ID</label><input type="text" value="E452"/></div>
+          <div class="form-field"><label>Role</label><input type="text" value="Auditor"/></div>
+          <div class="form-field"><label>Residential Address</label><input type="text" value="abc"/></div>
+        </div>
+        <button class="save-btn" onclick="showToast('Profile saved successfully!')">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-brand">
+        <div class="brand-name">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 7 7.5 7 13a5 5 0 0010 0c0-2.5-1.5-4.5-2-5.5 0 0-.5 2-2 3C12 8 12 2 12 2z" fill="#e87722"/></svg>
+          <span class="petro">Petro</span><span class="manage">Manage</span>
+        </div>
+        <div class="tagline">Smart Petroleum Management Platform</div>
+      </div>
+      <div>
+        <nav class="footer-nav">
+          <a href="home.html">Home</a><a href="feature.html">Features</a><a href="about.html">About</a><a href="contact.html">Contact</a>
+        </nav>
+        <div class="footer-copy">© 2026 All Rights Reserved</div>
+      </div>
+      <div class="footer-contact">
+        <span>✉ support@petromanage.com</span>
+        <span>📞 +91 98765 43210</span>
+        <span>📍 Chennai, India</span>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- Notification Popup -->
+<div class="overlay" id="overlay" onclick="closeNotif()"></div>
+<div class="notif-popup" id="notif-popup">
+  <div class="notif-header">Notifications <span onclick="markAllRead()">Mark all read</span></div>
+  <div class="notif-item"><div class="ni ni-amber">⚠️</div><div class="notif-text"><strong>INV-00128 pending approval</strong><small>1 hour ago · ₹ 6,40,000 – Jet Fuel Import</small></div></div>
+  <div class="notif-item"><div class="ni ni-red">🔴</div><div class="notif-text"><strong>Overdue invoice: INV-00119</strong><small>2 days ago · ₹ 4,20,000 – Transport</small></div></div>
+  <div class="notif-item"><div class="ni ni-green">✅</div><div class="notif-text"><strong>Audit Report #12 submitted</strong><small>Today · April 2026 monthly audit</small></div></div>
+  <div class="notif-item"><div class="ni ni-blue">📊</div><div class="notif-text"><strong>Monthly analysis report ready</strong><small>Today · View in Analysis section</small></div></div>
+  <div class="notif-item"><div class="ni ni-amber">📋</div><div class="notif-text"><strong>3 new invoices uploaded</strong><small>Yesterday · Requires your review</small></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Bills data ──
+  const billsData = [
+    { inv:'INV-00125', date:'28 Apr 2026', desc:'Diesel Purchase',      cat:'Import',    amount:'₹ 25,40,000', status:'paid' },
+    { inv:'INV-00126', date:'27 Apr 2026', desc:'Transport Charges',    cat:'Transport', amount:'₹ 4,80,000',  status:'paid' },
+    { inv:'INV-00127', date:'26 Apr 2026', desc:'Import Duty & Tax',    cat:'Import',    amount:'₹ 3,20,000',  status:'paid' },
+    { inv:'INV-00128', date:'25 Apr 2026', desc:'Jet Fuel Procurement', cat:'Import',    amount:'₹ 6,40,000',  status:'pending' },
+    { inv:'INV-00129', date:'24 Apr 2026', desc:'Storage Fees Q1',      cat:'Storage',   amount:'₹ 2,20,000',  status:'pending' },
+    { inv:'INV-00130', date:'20 Apr 2026', desc:'Pipeline Maintenance', cat:'Others',    amount:'₹ 1,80,000',  status:'overdue' },
+    { inv:'INV-00131', date:'18 Apr 2026', desc:'Road Tanker Hire',     cat:'Transport', amount:'₹ 2,40,000',  status:'overdue' },
+  ];
+
+  const statusBadge = {
+    paid:    '<span class="badge-paid">Paid</span>',
+    pending: '<span class="badge-pending-pay">Pending</span>',
+    overdue: '<span class="badge-overdue">Overdue</span>',
+  };
+
+  function renderBills(filter) {
+    const tbody = document.getElementById('bills-tbody');
+    const data  = filter === 'all' ? billsData : billsData.filter(b => b.status === filter);
+    tbody.innerHTML = data.map(b => `
+      <tr>
+        <td>${b.inv}</td>
+        <td>${b.date}</td>
+        <td>${b.desc}</td>
+        <td>${b.cat}</td>
+        <td>${b.amount}</td>
+        <td>${statusBadge[b.status]}</td>
+      </tr>`).join('');
+  }
+  renderBills('all');
+
+  function filterBills(btn, filter) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderBills(filter);
+  }
+
+  // ── Navigation ──
+  function navigate(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelector('[data-page="' + page + '"]')?.classList.add('active');
+    closeNotif();
+    window.scrollTo(0, 0);
+  }
+
+  document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+    item.addEventListener('click', () => navigate(item.dataset.page));
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    showToast('Logging out…');
+    setTimeout(() => { window.location.href = 'home.html'; }, 1500);
+  });
+
+  // ── Notification ──
+  const notifBtn   = document.getElementById('notif-btn');
+  const notifPopup = document.getElementById('notif-popup');
+  const overlay    = document.getElementById('overlay');
+
+  notifBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = notifPopup.classList.toggle('open');
+    overlay.classList.toggle('open', open);
+    if (open) document.getElementById('notif-dot').style.display = 'none';
+  });
+
+  function closeNotif() { notifPopup.classList.remove('open'); overlay.classList.remove('open'); }
+  function markAllRead() { showToast('All notifications marked as read'); closeNotif(); }
+
+  // ── Toast ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── Pie chart factory ──
+  function makePie(id, size) {
+    return new Chart(document.getElementById(id).getContext('2d'), {
+      type: 'pie',
+      data: {
+        datasets: [{
+          data: [65, 20, 10, 5],
+          backgroundColor: ['#2563eb','#16a34a','#d1d5db','#f97316'],
+          borderWidth: 2, borderColor: '#fff', hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.raw + '%' } } }
+      }
+    });
+  }
+  makePie('dashPieChart');
+  makePie('bcPieChart');
+  makePie('anlPieChart');
+
+  // ── Bills & Costs line chart ──
+  new Chart(document.getElementById('bcLineChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets: [{
+        label: 'Spend (₹L)',
+        data: [28, 34, 22, 46, 38, 41],
+        borderColor: '#e87722', backgroundColor: 'rgba(232,119,34,0.10)',
+        fill: true, tension: 0.42, pointRadius: 4, pointBackgroundColor: '#e87722', borderWidth: 2.5
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family:'Poppins', size:11 }, color:'#8a9bac' } },
+        y: { grid: { color:'#f0f5fa' }, ticks: { font: { family:'Poppins', size:11 }, color:'#8a9bac', callback: v => '₹'+v+'L' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // ── Analysis bar chart ──
+  new Chart(document.getElementById('txnBarChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets: [{
+        label: 'Transactions',
+        data: [180, 210, 175, 248, 195, 230],
+        backgroundColor: '#2563eb', borderRadius: 6, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family:'Poppins', size:11 }, color:'#8a9bac' } },
+        y: { grid: { color:'#f0f5fa' }, ticks: { font: { family:'Poppins', size:11 }, color:'#8a9bac' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // ── Analysis spend vs budget line chart ──
+  new Chart(document.getElementById('spendLineChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets: [
+        {
+          label: 'Actual Spend',
+          data: [28, 34, 22, 46, 38, 41],
+          borderColor: '#e87722', backgroundColor: 'rgba(232,119,34,0.08)',
+          fill: true, tension: 0.42, pointRadius: 4, pointBackgroundColor: '#e87722', borderWidth: 2.5
+        },
+        {
+          label: 'Budget',
+          data: [40, 40, 40, 40, 40, 40],
+          borderColor: '#2563eb', backgroundColor: 'transparent',
+          fill: false, tension: 0, pointRadius: 3, pointBackgroundColor: '#2563eb',
+          borderWidth: 2, borderDash: [6,4]
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'top', labels: { font: { family:'Poppins', size:11 }, usePointStyle: true, boxWidth: 8 } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family:'Poppins', size:11 }, color:'#8a9bac' } },
+        y: { grid: { color:'#f0f5fa' }, ticks: { font: { family:'Poppins', size:11 }, color:'#8a9bac', callback: v => '₹'+v+'L' }, beginAtZero: true }
+      }
+    }
+  });
+</script>
+</body>
+</html>
