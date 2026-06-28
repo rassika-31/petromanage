@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PetroManage – Reports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--navy:#1a2e4a;--orange:#e87722;--orange-dark:#d06518;--sidebar-w:150px;--blue-bg:#c8dff0;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Poppins',sans-serif;background:var(--blue-bg);color:var(--navy);min-height:100vh;display:flex;flex-direction:column;}
+    .app{display:flex;flex:1;}
+    .sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;align-items:center;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+    .sidebar-logo{display:flex;align-items:center;gap:4px;padding:16px 10px 22px;text-decoration:none;width:100%;}
+    .sidebar-logo svg{width:18px;height:18px;flex-shrink:0;}
+    .petro{color:var(--orange);font-weight:700;font-size:14px;}
+    .manage{color:#fff;font-weight:700;font-size:14px;}
+    .nav-item{width:100%;padding:14px 16px;text-align:left;color:#a8c0d6;font-size:13.5px;font-weight:500;cursor:pointer;border-left:3px solid transparent;transition:all 0.2s;}
+    .nav-item:hover{color:#fff;background:rgba(255,255,255,0.07);}
+    .nav-item.active{background:var(--orange);color:#fff;border-left-color:#fff;}
+    .content{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+    .header{height:60px;background:#fff;display:flex;align-items:center;padding:0 28px;border-bottom:1px solid #d0dde8;position:sticky;top:0;z-index:90;}
+    .header-title{font-size:22px;font-weight:800;color:var(--navy);font-style:italic;}
+    .page{padding:22px 26px;flex:1;}
+    .widget{background:#fff;border-radius:14px;padding:18px 20px;box-shadow:0 2px 10px rgba(26,46,74,0.07);margin-bottom:18px;}
+    .widget-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:14px;}
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+    .stat-card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(26,46,74,0.07);}
+    .s-icon{font-size:26px;margin-bottom:6px;}
+    .s-label{font-size:12px;color:#6b7a8d;font-weight:500;}
+    .s-value{font-size:22px;font-weight:800;color:var(--navy);}
+    .s-value.blue-val{color:#1a6fbf;} .s-value.orange-val{color:var(--orange);}
+    /* GENERATE FORM */
+    .gen-form{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;margin-bottom:18px;}
+    .form-field{display:flex;flex-direction:column;gap:5px;}
+    .form-field label{font-size:11.5px;color:#6b7a8d;font-weight:500;}
+    .form-field input,.form-field select{border:1.5px solid #cdd6e0;border-radius:8px;padding:9px 12px;font-family:'Poppins',sans-serif;font-size:12.5px;color:var(--navy);outline:none;}
+    .form-field input:focus,.form-field select:focus{border-color:#7eb8d4;}
+    .gen-btn{background:var(--orange);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+    .gen-btn:hover{background:var(--orange-dark);}
+    /* TABLE */
+    .rpt-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+    .rpt-table th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-weight:600;font-size:12px;}
+    .rpt-table th:first-child{border-radius:8px 0 0 0;} .rpt-table th:last-child{border-radius:0 8px 0 0;}
+    .rpt-table td{padding:11px 14px;border-bottom:1px solid #eef4fa;}
+    .rpt-table tr:hover td{background:#f5fbff;}
+    .badge{display:inline-block;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;}
+    .b-stock{background:#e8f7ff;color:#1a6fbf;}
+    .b-inventory{background:#e6f9f0;color:#1a8f55;}
+    .b-audit{background:#fff3e0;color:var(--orange);}
+    .b-summary{background:#f3e8ff;color:#7c3aed;}
+    .action-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 5px;}
+    .action-btn:hover{color:var(--orange);}
+    .loading{text-align:center;color:#6b7a8d;padding:20px;font-size:13px;}
+    .empty{text-align:center;color:#6b7a8d;padding:30px;font-size:13px;}
+    /* DETAIL MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#fff;border-radius:16px;padding:28px 32px;width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(26,46,74,0.2);}
+    .modal-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px;}
+    .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f5fa;font-size:13px;}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-label{color:#6b7a8d;font-weight:500;}
+    .detail-value{color:var(--navy);font-weight:600;}
+    .close-btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 24px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-top:16px;width:100%;}
+    .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--navy);color:#fff;padding:11px 24px;border-radius:8px;font-size:13px;opacity:0;transition:all 0.3s ease;z-index:500;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    footer{background:var(--navy);color:#fff;padding:16px 26px 16px calc(var(--sidebar-w) + 26px);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+    .footer-brand .brand-name{font-size:15px;font-weight:700;display:flex;align-items:center;gap:5px;}
+    .footer-brand .tagline{font-size:10px;color:#8fa8bf;margin-top:2px;}
+    .footer-copy{font-size:10px;color:#8fa8bf;margin-top:4px;text-align:center;}
+  </style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <a class="sidebar-logo" href="#">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 7 7.5 7 13a5 5 0 0010 0c0-2.5-1.5-4.5-2-5.5 0 0-.5 2-2 3C12 8 12 2 12 2z" fill="#e87722"/></svg>
+      <span class="petro">Petro</span><span class="manage">Manage</span>
+    </a>
+    <div class="nav-item active">Reports</div>
+    <div class="nav-item" id="back-btn">← Back</div>
+    <div class="nav-item" id="logout-btn">Logout</div>
+  </nav>
+
+  <div class="content">
+    <div class="header">
+      <div class="header-title">Reports & Analytics</div>
+    </div>
+
+    <div class="page">
+      <!-- STATS -->
+      <div class="stat-grid">
+        <div class="stat-card"><div class="s-icon">📊</div><div class="s-label">Total Reports</div><div class="s-value blue-val" id="stat-total">—</div></div>
+        <div class="stat-card"><div class="s-icon">📦</div><div class="s-label">Stock Reports</div><div class="s-value orange-val" id="stat-stock">—</div></div>
+        <div class="stat-card"><div class="s-icon">📋</div><div class="s-label">Inventory Reports</div><div class="s-value" id="stat-inv">—</div></div>
+        <div class="stat-card"><div class="s-icon">📝</div><div class="s-label">Audit Reports</div><div class="s-value" id="stat-audit">—</div></div>
+      </div>
+
+      <!-- GENERATE -->
+      <div class="widget">
+        <div class="widget-title">Generate New Report</div>
+        <div class="gen-form">
+          <div class="form-field">
+            <label>Report Type</label>
+            <select id="f-type">
+              <option value="Stock Report">Stock Report</option>
+              <option value="Inventory Report">Inventory Report</option>
+              <option value="Audit Report">Audit Report</option>
+              <option value="Summary Report">Summary Report</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Generated By</label>
+            <input type="text" id="f-by" placeholder="Your name"/>
+          </div>
+          <div class="form-field">
+            <label>Notes (optional)</label>
+            <input type="text" id="f-notes" placeholder="e.g. Monthly review"/>
+          </div>
+          <button class="gen-btn" onclick="generateReport()">⚡ Generate</button>
+        </div>
+      </div>
+
+      <!-- REPORTS LIST -->
+      <div class="widget">
+        <div class="widget-title">Generated Reports</div>
+        <div id="reports-table"><div class="loading">Loading reports...</div></div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-brand">
+        <div class="brand-name">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 7 7.5 7 13a5 5 0 0010 0c0-2.5-1.5-4.5-2-5.5 0 0-.5 2-2 3C12 8 12 2 12 2z" fill="#e87722"/></svg>
+          <span class="petro">Petro</span><span class="manage">Manage</span>
+        </div>
+        <div class="tagline">Smart Petroleum Management Platform</div>
+      </div>
+      <div class="footer-copy">© 2026 All Rights Reserved</div>
+    </footer>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Report Details</div>
+    <div id="modal-body"></div>
+    <button class="close-btn" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'https://petromanage-production.up.railway.app';
+  let reportsData = [];
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    showToast('Logging out…');
+    setTimeout(() => window.location.href='login.html', 1500);
+  });
+  document.getElementById('back-btn').addEventListener('click', () => history.back());
+
+  async function loadReports() {
+    try {
+      const res = await fetch(API + '/reports');
+      reportsData = await res.json();
+      renderStats();
+      renderTable();
+    } catch(e) {
+      document.getElementById('reports-table').innerHTML = '<div class="empty">Failed to load reports.</div>';
+    }
+  }
+
+  function renderStats() {
+    document.getElementById('stat-total').textContent = reportsData.length;
+    document.getElementById('stat-stock').textContent = reportsData.filter(r => r.report_type === 'Stock Report').length;
+    document.getElementById('stat-inv').textContent = reportsData.filter(r => r.report_type === 'Inventory Report').length;
+    document.getElementById('stat-audit').textContent = reportsData.filter(r => r.report_type === 'Audit Report').length;
+  }
+
+  function getBadge(type) {
+    const map = {'Stock Report':'b-stock','Inventory Report':'b-inventory','Audit Report':'b-audit','Summary Report':'b-summary'};
+    return `<span class="badge ${map[type]||'b-stock'}">${type}</span>`;
+  }
+
+  function renderTable() {
+    const el = document.getElementById('reports-table');
+    if (!reportsData.length) {
+      el.innerHTML = '<div class="empty">No reports yet. Generate your first report above! ⬆️</div>';
+      return;
+    }
+    el.innerHTML = `<table class="rpt-table">
+      <thead><tr><th>Report Type</th><th>Generated By</th><th>Notes</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>${reportsData.map(r => `
+        <tr>
+          <td>${getBadge(r.report_type)}</td>
+          <td>${r.data?.generated_by || r.generated_by || '—'}</td>
+          <td>${r.data?.notes || '—'}</td>
+          <td>${new Date(r.created_at).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}</td>
+          <td>
+            <button class="action-btn" onclick="viewReport('${r.id}')" title="View">👁️</button>
+            <button class="action-btn" onclick="deleteReport('${r.id}')" title="Delete">🗑️</button>
+          </td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  async function generateReport() {
+    const type = document.getElementById('f-type').value;
+    const by = document.getElementById('f-by').value.trim();
+    const notes = document.getElementById('f-notes').value.trim();
+    if (!by) { showToast('Please enter your name!'); return; }
+
+    // Fetch live inventory data to include in report
+    let invData = [];
+    try {
+      const res = await fetch(API + '/inventory');
+      invData = await res.json();
+    } catch(e) {}
+
+    const body = {
+      report_type: type,
+      generated_by: by,
+      data: {
+        generated_by: by,
+        notes: notes || 'No notes',
+        report_type: type,
+        inventory_snapshot: invData.map(i => ({product: i.product_name, quantity: i.quantity, unit: i.unit, location: i.location})),
+        total_products: invData.length,
+        total_quantity: invData.reduce((s,i) => s + (i.quantity||0), 0),
+        generated_at: new Date().toISOString()
+      }
+    };
+
+    try {
+      const res = await fetch(API + '/reports', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      if (res.ok) {
+        showToast('Report generated successfully! ✅');
+        document.getElementById('f-by').value = '';
+        document.getElementById('f-notes').value = '';
+        loadReports();
+      } else { showToast('Error generating report!'); }
+    } catch(e) { showToast('Error: ' + e.message); }
+  }
+
+  function viewReport(id) {
+    const r = reportsData.find(x => x.id === id);
+    if (!r) return;
+    const d = r.data || {};
+    document.getElementById('modal-title').textContent = r.report_type;
+    document.getElementById('modal-body').innerHTML = `
+      <div class="detail-row"><span class="detail-label">Report Type</span><span class="detail-value">${r.report_type}</span></div>
+      <div class="detail-row"><span class="detail-label">Generated By</span><span class="detail-value">${d.generated_by || '—'}</span></div>
+      <div class="detail-row"><span class="detail-label">Notes</span><span class="detail-value">${d.notes || '—'}</span></div>
+      <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${new Date(r.created_at).toLocaleString('en-IN')}</span></div>
+      <div class="detail-row"><span class="detail-label">Total Products</span><span class="detail-value">${d.total_products ?? '—'}</span></div>
+      <div class="detail-row"><span class="detail-label">Total Quantity</span><span class="detail-value">${d.total_quantity?.toLocaleString() ?? '—'} L</span></div>
+      ${d.inventory_snapshot ? `
+      <div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">Inventory Snapshot</div>
+      ${d.inventory_snapshot.map(i => `
+        <div class="detail-row"><span class="detail-label">${i.product} (${i.location})</span><span class="detail-value">${i.quantity?.toLocaleString()} ${i.unit}</span></div>
+      `).join('')}` : ''}
+    `;
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+  async function deleteReport(id) {
+    if (!confirm('Delete this report?')) return;
+    try {
+      const res = await fetch(`${API}/reports/${id}`, { method: 'DELETE' });
+      if (res.ok) { showToast('Report deleted!'); loadReports(); }
+      else { showToast('Error deleting!'); }
+    } catch(e) { showToast('Error: ' + e.message); }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  loadReports();
+</script>
+</body>
+</html>

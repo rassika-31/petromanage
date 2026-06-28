@@ -167,3 +167,36 @@ def update_inventory(item_id: str, item: InventoryItem):
         return {"message": "Item updated", "data": result.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class ReportData(BaseModel):
+    report_type: str
+    generated_by: str
+    data: dict
+
+@app.get("/reports")
+def get_reports():
+    try:
+        result = supabase.table("reports").select("*").order("created_at", desc=True).execute()
+        return result.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/reports")
+def generate_report(report: ReportData):
+    try:
+        result = supabase.table("reports").insert({
+            "report_type": report.report_type,
+            "generated_by": report.generated_by,
+            "data": report.data
+        }).execute()
+        return {"message": "Report generated", "data": result.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/reports/{report_id}")
+def delete_report(report_id: str):
+    try:
+        supabase.table("reports").delete().eq("id", report_id).execute()
+        return {"message": "Report deleted"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
