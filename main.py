@@ -186,7 +186,6 @@ def generate_report(report: ReportData):
     try:
         result = supabase.table("reports").insert({
             "report_type": report.report_type,
-            "generated_by": report.generated_by,
             "data": report.data
         }).execute()
         return {"message": "Report generated", "data": result.data}
