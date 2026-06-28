@@ -456,7 +456,7 @@
 
      if (ok) {
   showToast('Registering…');
-  fetch('http://127.0.0.1:8000/auth/signup', {
+  fetch('https://petromanage-production.up.railway.app/auth/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

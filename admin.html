@@ -717,21 +717,21 @@ const token = localStorage.getItem('token');
 async function loadDashboard() {
   try {
     // Get real user count
-    const usersRes = await fetch('http://127.0.0.1:8000/users', {
+    const usersRes = await fetch('https://petromanage-production.up.railway.app/users', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const users = await usersRes.json();
     document.getElementById('total-users').textContent = users.length;
 
     // Get real transactions
-    const transRes = await fetch('http://127.0.0.1:8000/transactions', {
+    const transRes = await fetch('https://petromanage-production.up.railway.app/transactions', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const transactions = await transRes.json();
     document.getElementById('total-transactions').textContent = transactions.length;
 
     // Get real inventory
-    const invRes = await fetch('http://127.0.0.1:8000/inventory', {
+    const invRes = await fetch('https://petromanage-production.up.railway.app/inventory', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const inventory = await invRes.json();
@@ -747,7 +747,7 @@ loadDashboard();
 // Load real users into table
 async function loadUsers() {
   try {
-    const res = await fetch('http://127.0.0.1:8000/users');
+    const res = await fetch('https://petromanage-production.up.railway.app/users');
     const users = await res.json();
     const tbody = document.getElementById('users-tbody');
     if (!tbody) return;
@@ -779,7 +779,7 @@ async function loadUsers() {
 async function deleteUser(id) {
   if (!confirm('Are you sure you want to delete this user?')) return;
   try {
-    const res = await fetch('http://127.0.0.1:8000/users/' + id, {
+    const res = await fetch('https://petromanage-production.up.railway.app/users/' + id, {
       method: 'DELETE'
     });
     const data = await res.json();
@@ -804,7 +804,7 @@ async function addNewUser() {
   }
 
   try {
-    const res = await fetch('http://127.0.0.1:8000/auth/signup', {
+    const res = await fetch('https://petromanage-production.up.railway.app/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, email, password, role })
