@@ -280,6 +280,7 @@
     <div class="nav-item" data-page="importmgmt">Import Management</div>
     <div class="nav-item" data-page="exportmgmt">Export Management</div>
     <div class="nav-item" data-page="reports">Reports</div>
+    <div class="nav-item" data-page="settings">Settings</div>
     <div class="nav-item" id="logout-btn">Logout</div>
   </nav>
 
@@ -309,10 +310,9 @@
         </div>
         <div class="alerts-widget" style="grid-row:1/3;">
           <div class="alerts-title-row"><span class="alerts-title">Recent Alerts</span><a class="view-all-link" onclick="navigate('reports')">View All</a></div>
-          <div class="alert-row"><span class="alert-icon">🔴</span><span class="alert-msg">Tank T-03 Low Fuel Level</span><span class="alert-time">10:30 Am</span></div>
-          <div class="alert-row"><span class="alert-icon">🔴</span><span class="alert-msg">Dispatch Delay – DSP-2036</span><span class="alert-time">09:15 Am</span></div>
-          <div class="alert-row"><span class="alert-icon">🔴</span><span class="alert-msg">Import Validation Failed</span><span class="alert-time">08:45 Am</span></div>
-          <div class="alert-row"><span class="alert-icon">🔴</span><span class="alert-msg">Unauthorized Access Attempt</span><span class="alert-time">07:20 Am</span></div>
+          <div id="recent-alerts-body">
+            <div class="alert-row"><span class="alert-icon">⏳</span><span class="alert-msg">Loading alerts...</span></div>
+          </div>
         </div>
       </div>
 
@@ -325,7 +325,7 @@
           <div class="sc-row"><div><div class="sc-label">Revenue Overview</div><div class="sc-value" style="font-size:17px;">₹ 5,48,90,000</div><div class="sc-sub green">Total Revenue</div></div><div class="sc-icon">📊</div></div>
         </div>
         <div class="stat-card">
-          <div class="sc-row"><div><div class="sc-label">System Alerts</div><div class="sc-value orange">7</div><div class="sc-sub red">Critical Alerts</div></div><div class="sc-icon">⚠️</div></div>
+          <div class="sc-row"><div><div class="sc-label">System Alerts</div><div class="sc-value orange" id="system-alerts-count">—</div><div class="sc-sub red">Low Stock Alerts</div></div><div class="sc-icon">⚠️</div></div>
         </div>
         <!-- empty cell to align with the alerts widget spanning 2 rows -->
         <div></div>
@@ -360,20 +360,17 @@
           <div class="widget-title">Recent Activities</div>
           <table class="activity-table">
             <thead><tr><th>Activity</th><th>Module</th><th>Performed By</th><th>Date and Time</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td>New User Added</td><td>User Management</td><td>Admin</td><td>07/05/2006 10:20 AM</td><td><span class="badge b-success">Successful</span></td></tr>
-              <tr><td>Import File Approved</td><td>Import Management</td><td>Admin</td><td>07/05/2006 10:20 AM</td><td><span class="badge b-success">Successful</span></td></tr>
-              <tr><td>Export Report</td><td>Export Management</td><td>Admin</td><td>07/05/2006 10:20 AM</td><td><span class="badge b-success">Successful</span></td></tr>
-              <tr><td>Dispatch Confirmed</td><td>Dispatch Logs</td><td>Admin</td><td>07/05/2006 10:20 AM</td><td><span class="badge b-success">Successful</span></td></tr>
+            <tbody id="activity-tbody">
+              <tr><td colspan="5" style="text-align:center;color:#6b7a8d;padding:14px;">Loading activities...</td></tr>
             </tbody>
           </table>
         </div>
         <div class="quick-actions">
           <div class="qa-title">Quick Actions</div>
           <button class="qa-btn qa-blue" onclick="navigate('usermgmt')"><span class="qa-ico">👤</span><span class="qa-text">Add New User</span></button>
-          <button class="qa-btn qa-green" onclick="showToast('Approval workflow opened')"><span class="qa-ico">✅</span><span class="qa-text">Approve Request</span></button>
+          <button class="qa-btn qa-green" onclick="navigate('import')"><span class="qa-ico">✅</span><span class="qa-text">Approve Request</span></button>
           <button class="qa-btn qa-pink" onclick="navigate('reports')"><span class="qa-ico">🔴</span><span class="qa-text">Generate Report</span></button>
-          <button class="qa-btn qa-gray" onclick="showToast('System settings opened')"><span class="qa-ico">⚙️</span><span class="qa-text">System Settings</span></button>
+          <button class="qa-btn qa-gray" onclick="navigate('settings')"><span class="qa-ico">⚙️</span><span class="qa-text">System Settings</span></button>
         </div>
       </div>
     </div>
@@ -495,7 +492,7 @@
           <div class="filter-field"><label>Report Type</label><select><option>All Reports</option><option>Stock</option><option>Import</option><option>Export</option></select></div>
           <div class="filter-field"><label>Tank</label><select><option>All Tanks</option><option>T-01</option><option>T-02</option></select></div>
           <div class="filter-field"><label>Fuel Type</label><select><option>All Fuel Types</option><option>Diesel</option><option>Petrol</option></select></div>
-          <button class="gen-btn" onclick="showToast('Report generated!')">Generate</button>
+          <button class="gen-btn" onclick="generateReport()">Generate</button>
         </div>
       </div>
       <div class="kpi-grid5">
@@ -560,6 +557,50 @@
         </div>
       </div>
     </div>
+
+    
+    <!-- ════════ SETTINGS ════════ -->
+    <div class="page" id="page-settings">
+      <div class="widget" style="max-width:600px;margin-bottom:18px;">
+        <div class="widget-title">⚙️ System Settings</div>
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f5fa;">
+            <div><div style="font-size:13px;font-weight:600;color:var(--navy);">Site Name</div><div style="font-size:11px;color:#6b7a8d;">PetroManage Petroleum Management System</div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f5fa;">
+            <div><div style="font-size:13px;font-weight:600;color:var(--navy);">Backend API</div><div style="font-size:11px;color:#6b7a8d;">https://petromanage-production.up.railway.app</div></div>
+            <span style="background:#e6f9f0;color:#1a8f55;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;">● Online</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f5fa;">
+            <div><div style="font-size:13px;font-weight:600;color:var(--navy);">Database</div><div style="font-size:11px;color:#6b7a8d;">Supabase PostgreSQL — project: dxazafurylafmnravozv</div></div>
+            <span style="background:#e6f9f0;color:#1a8f55;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;">● Connected</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f5fa;">
+            <div><div style="font-size:13px;font-weight:600;color:var(--navy);">Frontend Hosting</div><div style="font-size:11px;color:#6b7a8d;">GitHub Pages — rassika-31.github.io/petromanage</div></div>
+            <span style="background:#e6f9f0;color:#1a8f55;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;">● Live</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+            <div><div style="font-size:13px;font-weight:600;color:var(--navy);">Low Stock Threshold</div><div style="font-size:11px;color:#6b7a8d;">Alert when quantity drops below 1000 L</div></div>
+            <span style="background:#fff3e0;color:#e87722;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;">1000 L</span>
+          </div>
+        </div>
+      </div>
+      <div class="widget" style="max-width:600px;">
+        <div class="widget-title">👤 Logged In As</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:8px;">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700;">A</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);" id="settings-username">Admin</div>
+            <div style="font-size:11px;color:#6b7a8d;">Role: Administrator</div>
+          </div>
+        </div>
+        <button onclick="localStorage.removeItem('token');window.location.href='login.html';" 
+          style="margin-top:16px;background:#e87722;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">
+          Logout
+        </button>
+      </div>
+    </div>
+
 
     <footer>
       <div class="footer-brand">
@@ -672,7 +713,7 @@
     ],
     v => v/1000+'k'
   );
-  donutChart('dashFuelDonut', [45,30,15,10], ['#2563eb','#f87c8d','#a78bfa','#34d399']);
+  // dashFuelDonut is now rendered by loadDashboard() with real data
 
   // Reports Charts
   lineChart('rptStockLine',
@@ -715,34 +756,120 @@
 const token = localStorage.getItem('token');
 
 async function loadDashboard() {
+  const BASE = 'https://petromanage-production.up.railway.app';
   try {
-    // Get real user count
-    const usersRes = await fetch('https://petromanage-production.up.railway.app/users', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const users = await usersRes.json();
-    document.getElementById('total-users').textContent = users.length;
-
-    // Get real transactions
-    const transRes = await fetch('https://petromanage-production.up.railway.app/transactions', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const transactions = await transRes.json();
-    document.getElementById('total-transactions').textContent = transactions.length;
-
-    // Get real inventory
-    const invRes = await fetch('https://petromanage-production.up.railway.app/inventory', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    // Fetch all data in parallel
+    const [usersRes, transRes, invRes, rptRes, auditRes] = await Promise.all([
+      fetch(BASE + '/users', { headers: { 'Authorization': 'Bearer ' + token } }),
+      fetch(BASE + '/transactions'),
+      fetch(BASE + '/inventory'),
+      fetch(BASE + '/reports'),
+      fetch(BASE + '/audit-logs', { headers: { 'Authorization': 'Bearer ' + token } })
+    ]);
+    const users     = await usersRes.json();
+    const trans     = await transRes.json();
     const inventory = await invRes.json();
-    const totalStock = inventory.reduce((sum, item) => sum + item.quantity, 0);
-    document.getElementById('total-stock').textContent = totalStock + 'KL';
+    const reports   = await rptRes.json();
+    let auditLogs = [];
+    try { auditLogs = await auditRes.json(); } catch(e) { auditLogs = []; }
+    if (!Array.isArray(auditLogs)) auditLogs = [];
+
+    // ── STAT CARDS ──
+    document.getElementById('total-users').textContent = Array.isArray(users) ? users.length : 0;
+    document.getElementById('total-transactions').textContent = Array.isArray(trans) ? trans.length : 0;
+    const totalStock = Array.isArray(inventory) ? inventory.reduce((s,i) => s+(i.quantity||0), 0) : 0;
+    document.getElementById('total-stock').textContent = totalStock.toLocaleString() + ' L';
+
+    // ── SYSTEM ALERTS = low stock items ──
+    const lowStock = Array.isArray(inventory) ? inventory.filter(i => i.quantity < 1000) : [];
+    document.getElementById('system-alerts-count').textContent = lowStock.length;
+
+    // ── RECENT ALERTS = low stock warnings ──
+    const alertsBody = document.getElementById('recent-alerts-body');
+    if (alertsBody) {
+      if (lowStock.length === 0) {
+        alertsBody.innerHTML = '<div class="alert-row"><span class="alert-icon">✅</span><span class="alert-msg">All stock levels are healthy</span></div>';
+      } else {
+        alertsBody.innerHTML = lowStock.map(i => `
+          <div class="alert-row">
+            <span class="alert-icon">🔴</span>
+            <span class="alert-msg">${i.product_name} low stock — ${i.quantity} ${i.unit} at ${i.location}</span>
+          </div>`).join('');
+      }
+    }
+
+    // ── STOCK OVERVIEW CHART (real inventory) ──
+    const stockCtx = document.getElementById('dashStockChart');
+    if (stockCtx && Array.isArray(inventory) && inventory.length) {
+      if (window._dashStockChart) window._dashStockChart.destroy();
+      window._dashStockChart = new Chart(stockCtx, {
+        type: 'bar',
+        data: {
+          labels: inventory.map(i => i.product_name),
+          datasets: [{ label: 'Quantity (L)', data: inventory.map(i => i.quantity),
+            backgroundColor: ['#2563eb','#f97316','#a78bfa','#34d399','#f5c842'],
+            borderRadius: 6, borderSkipped: false }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid:{display:false}, ticks:{font:{family:'Poppins',size:11}} },
+            y: { grid:{color:'#f0f5fa'}, ticks:{font:{family:'Poppins',size:10}} }
+          }
+        }
+      });
+    }
+
+    // ── FUEL DONUT CHART (real inventory) ──
+    const donutCtx = document.getElementById('dashFuelDonut');
+    if (donutCtx && Array.isArray(inventory) && inventory.length) {
+      if (window._dashFuelDonut) window._dashFuelDonut.destroy();
+      const colors = ['#2563eb','#f97316','#a78bfa','#34d399','#f5c842'];
+      window._dashFuelDonut = new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+          labels: inventory.map(i => i.product_name),
+          datasets: [{ data: inventory.map(i => i.quantity),
+            backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }]
+        },
+        options: { cutout: '70%', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } } }
+      });
+      const center = donutCtx.closest('.donut-wrap')?.querySelector('.donut-center');
+      if (center) center.textContent = totalStock.toLocaleString() + ' L';
+      const legend = donutCtx.closest('.widget')?.querySelector('.legend');
+      if (legend) {
+        legend.innerHTML = inventory.map((i,idx) => {
+          const pct = totalStock ? Math.round(i.quantity/totalStock*100) : 0;
+          return `<div class="legend-item"><div class="leg-dot" style="background:${colors[idx]||'#ccc'}"></div>${i.product_name} &nbsp; ${pct}%</div>`;
+        }).join('');
+      }
+    }
+
+    // ── RECENT ACTIVITIES from audit_logs ──
+    const actBody = document.getElementById('activity-tbody');
+    if (actBody) {
+      if (!Array.isArray(auditLogs) || auditLogs.length === 0) {
+        actBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#6b7a8d;padding:14px;">No activities recorded yet.</td></tr>';
+      } else {
+        const actionLabel = { login:'User Login', import:'Import Action', export:'Export Action', delete:'Delete Action', add:'Add Action' };
+        const moduleLabel = { login:'User Management', import:'Import Management', export:'Export Management', delete:'System', add:'System' };
+        actBody.innerHTML = auditLogs.slice(0,6).map(log => `
+          <tr>
+            <td>${actionLabel[log.action] || log.action || '—'}</td>
+            <td>${moduleLabel[log.action] || 'System'}</td>
+            <td>${log.username || log.details || 'Unknown'}</td>
+            <td>${log.created_at ? new Date(log.created_at).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'}) : 'Recent'}</td>
+            <td><span class="badge b-success">Successful</span></td>
+          </tr>`).join('');
+      }
+    }
 
   } catch(e) {
-    console.log('Error loading dashboard:', e);
+    console.log('Dashboard load error:', e);
   }
 }
-
 loadDashboard();
 // Load real users into table
 async function loadUsers() {
@@ -825,6 +952,66 @@ async function addNewUser() {
     showToast('Cannot connect to server!');
   }
 }
+
+  // ── REPORTS ──
+  const API = 'https://petromanage-production.up.railway.app';
+
+  async function loadReports() {
+    try {
+      const res = await fetch(API + '/reports');
+      const reports = await res.json();
+      const el = document.getElementById('admin-reports-list');
+      if (!reports.length) {
+        el.innerHTML = '<div style="text-align:center;color:#6b7a8d;padding:16px;font-size:13px;">No reports yet. Generate one above!</div>';
+        return;
+      }
+      el.innerHTML = `<table class="rpt-table">
+        <thead><tr><th>Report Type</th><th>Generated By</th><th>Generated On</th><th>Action</th></tr></thead>
+        <tbody>${reports.map(r => `
+          <tr>
+            <td>${r.report_type}</td>
+            <td>${r.data?.generated_by || '—'}</td>
+            <td>${new Date(r.created_at).toLocaleDateString('en-IN')}</td>
+            <td><button class="icon-btn" onclick="deleteReport('${r.id}')">🗑️</button></td>
+          </tr>`).join('')}
+        </tbody></table>`;
+    } catch(e) { console.error(e); }
+  }
+
+  async function generateReport() {
+    const typeEl = document.querySelector('#page-reports .rpt-filter-row select');
+    const type = typeEl ? typeEl.value : 'Stock Report';
+    const by = prompt('Enter your name:');
+    if (!by) return;
+    try {
+      const invRes = await fetch(API + '/inventory');
+      const invData = await invRes.json();
+      const body = {
+        report_type: type,
+        generated_by: by,
+        data: {
+          generated_by: by,
+          report_type: type,
+          total_products: invData.length,
+          total_quantity: invData.reduce((s,i) => s + (i.quantity||0), 0),
+          inventory_snapshot: invData.map(i => ({product: i.product_name, quantity: i.quantity, unit: i.unit, location: i.location})),
+          generated_at: new Date().toISOString()
+        }
+      };
+      const res = await fetch(API + '/reports', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (res.ok) { showToast('Report generated successfully!'); loadReports(); }
+      else { showToast('Error generating report!'); }
+    } catch(e) { showToast('Error: ' + e.message); }
+  }
+
+  async function deleteReport(id) {
+    if (!confirm('Delete this report?')) return;
+    const res = await fetch(API + '/reports/' + id, { method: 'DELETE' });
+    if (res.ok) { showToast('Report deleted!'); loadReports(); }
+  }
+
+  loadReports();
+
 </script>
 </body>
 </html>

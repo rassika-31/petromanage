@@ -137,8 +137,11 @@ def get_users():
 
 @app.get("/audit-logs")
 def get_audit_logs():
-    result = supabase.table("audit_logs").select("*").order("created_at", desc=True).execute()
-    return result.data
+    try:
+        result = supabase.table("audit_logs").select("*").order("created_at", desc=True).limit(20).execute()
+        return result.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 @app.delete("/users/{user_id}")
 def delete_user(user_id: str):
     try:
