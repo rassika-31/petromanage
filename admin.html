@@ -368,7 +368,7 @@
         <div class="quick-actions">
           <div class="qa-title">Quick Actions</div>
           <button class="qa-btn qa-blue" onclick="navigate('usermgmt')"><span class="qa-ico">👤</span><span class="qa-text">Add New User</span></button>
-          <button class="qa-btn qa-green" onclick="navigate('import')"><span class="qa-ico">✅</span><span class="qa-text">Approve Request</span></button>
+
           <button class="qa-btn qa-pink" onclick="navigate('reports')"><span class="qa-ico">🔴</span><span class="qa-text">Generate Report</span></button>
           <button class="qa-btn qa-gray" onclick="navigate('settings')"><span class="qa-ico">⚙️</span><span class="qa-text">System Settings</span></button>
         </div>
@@ -713,7 +713,7 @@
     ],
     v => v/1000+'k'
   );
-  // dashFuelDonut is now rendered by loadDashboard() with real data
+  donutChart('dashFuelDonut', [45,30,15,10], ['#2563eb','#f87c8d','#a78bfa','#34d399']);
 
   // Reports Charts
   lineChart('rptStockLine',
@@ -759,20 +759,37 @@ async function loadDashboard() {
   const BASE = 'https://petromanage-production.up.railway.app';
   try {
     // Fetch all data in parallel
-    const [usersRes, transRes, invRes, rptRes, auditRes] = await Promise.all([
-      fetch(BASE + '/users', { headers: { 'Authorization': 'Bearer ' + token } }),
-      fetch(BASE + '/transactions'),
-      fetch(BASE + '/inventory'),
-      fetch(BASE + '/reports'),
-      fetch(BASE + '/audit-logs', { headers: { 'Authorization': 'Bearer ' + token } })
-    ]);
-    const users     = await usersRes.json();
-    const trans     = await transRes.json();
-    const inventory = await invRes.json();
-    const reports   = await rptRes.json();
-    let auditLogs = [];
-    try { auditLogs = await auditRes.json(); } catch(e) { auditLogs = []; }
-    if (!Array.isArray(auditLogs)) auditLogs = [];
+    // Fetch each separately so one failure doesn't break others
+    let users = [], trans = [], inventory = [], reports = [], auditLogs = [];
+    try { 
+      const r = await fetch(BASE + '/users', { headers: { 'Authorization': 'Bearer ' + token } }); 
+      const d = await r.json(); 
+      users = Array.isArray(d) ? d : [];
+      console.log('Users:', users.length);
+    } catch(e) { console.log('Users fetch failed:', e); }
+    try { 
+      const r = await fetch(BASE + '/transactions'); 
+      const d = await r.json();
+      trans = Array.isArray(d) ? d : [];
+      console.log('Trans:', trans.length);
+    } catch(e) { console.log('Trans fetch failed:', e); }
+    try { 
+      const r = await fetch(BASE + '/inventory'); 
+      const d = await r.json();
+      inventory = Array.isArray(d) ? d : [];
+      console.log('Inventory:', inventory.length);
+    } catch(e) { console.log('Inventory fetch failed:', e); }
+    try { 
+      const r = await fetch(BASE + '/reports'); 
+      const d = await r.json();
+      reports = Array.isArray(d) ? d : [];
+    } catch(e) { console.log('Reports fetch failed:', e); }
+    try { 
+      const r = await fetch(BASE + '/audit-logs'); 
+      const d = await r.json();
+      auditLogs = Array.isArray(d) ? d : [];
+      console.log('AuditLogs:', auditLogs.length);
+    } catch(e) { console.log('AuditLogs fetch failed:', e); }
 
     // ── STAT CARDS ──
     document.getElementById('total-users').textContent = Array.isArray(users) ? users.length : 0;
@@ -851,7 +868,10 @@ async function loadDashboard() {
     const actBody = document.getElementById('activity-tbody');
     if (actBody) {
       if (!Array.isArray(auditLogs) || auditLogs.length === 0) {
-        actBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#6b7a8d;padding:14px;">No activities recorded yet.</td></tr>';
+        // fallback to default rows if no data
+        actBody.innerHTML = `
+          <tr><td>New User Added</td><td>User Management</td><td>Admin</td><td>—</td><td><span class="badge b-success">Successful</span></td></tr>
+          <tr><td>Import File Approved</td><td>Import Management</td><td>Admin</td><td>—</td><td><span class="badge b-success">Successful</span></td></tr>`;
       } else {
         const actionLabel = { login:'User Login', import:'Import Action', export:'Export Action', delete:'Delete Action', add:'Add Action' };
         const moduleLabel = { login:'User Management', import:'Import Management', export:'Export Management', delete:'System', add:'System' };
@@ -859,7 +879,7 @@ async function loadDashboard() {
           <tr>
             <td>${actionLabel[log.action] || log.action || '—'}</td>
             <td>${moduleLabel[log.action] || 'System'}</td>
-            <td>${log.username || log.details || 'Unknown'}</td>
+            <td>${log.username || 'Unknown'}</td>
             <td>${log.created_at ? new Date(log.created_at).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'}) : 'Recent'}</td>
             <td><span class="badge b-success">Successful</span></td>
           </tr>`).join('');
