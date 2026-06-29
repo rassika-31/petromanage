@@ -981,6 +981,7 @@ async function addNewUser() {
       const res = await fetch(API + '/reports');
       const reports = await res.json();
       const el = document.getElementById('admin-reports-list');
+      if (!el) return;
       if (!reports.length) {
         el.innerHTML = '<div style="text-align:center;color:#6b7a8d;padding:16px;font-size:13px;">No reports yet. Generate one above!</div>';
         return;
